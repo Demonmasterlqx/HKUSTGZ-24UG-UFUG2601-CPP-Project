@@ -4,7 +4,7 @@ Command_line get_command(ifstream & IN){
     stringstream input;
     string ans,para_string,para_string1,para_string2;
     char lin=0;bool pre_empty=1;
-    Command_type type;
+    Command_type type=ERROR_COMMAND;
     Parameter para;
     Condition condition;
     Set_configs sets;

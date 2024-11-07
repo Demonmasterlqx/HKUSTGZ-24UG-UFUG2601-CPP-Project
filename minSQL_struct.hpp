@@ -28,6 +28,8 @@ enum Data_type:int{
     INTEGER,
     FLOAT,
     CONDITION,
+    COLUMN_POS,
+    SET_CONFIGS,
     ERROR_TYPE
 };
 
@@ -85,13 +87,13 @@ class Command_line{
     Command_line(Command_type G,Parameter F);
     Command_type get_command_type();
     Parameter get_parameter();
-    private:
+    public:
     Command_type command_type;
     Parameter parameter;
 };
 
 class Table{
-    private:
+    public:
     string Table_name;
     vector<string> column_name;
     vector<Data_type> data_type;
@@ -99,7 +101,7 @@ class Table{
 };
 
 class Database{
-    private:
+    public:
     string data_base_name;
     vector<Table> data;
 };

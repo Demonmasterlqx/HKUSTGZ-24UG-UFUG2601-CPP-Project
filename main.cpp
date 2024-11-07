@@ -1,38 +1,125 @@
 #include<bits/stdc++.h>
 #include "minSQL_struct.hpp"
 using namespace std;
-// struct VISTOR;
-// vector<Database> database;
 
-// struct VISTOR{
-//     void operator()(const Condition_parameter & a){cout<<"Condition_parameter "<<a.pre_bool_op<<endl;}
-//     void operator()(const string & a){cout<<a<<endl;}
-//     void operator()(const condition& a){}
-//     // void operator()(const condition& a){for(auto i : a) visit([](const Condition_parameter &a){cout<<"Condition_parameter "<<a.pre_bool_op<<endl;},i);}
-//     void operator()(const int & a){cout<<a<<endl;}
-//     void operator()(const float & a){cout<<a<<endl;}
-//     void operator()(const Column_pos & a){cout<<a.column_name<<" "<<a.table_name<<endl;}
-// };
+vector<Database> database;
+ifstream in;ofstream out;
+int Database_index=-1;
 
-// auto visitor=[](auto a){
-//     cout<<a<<endl;
-// };
+inline Command_line get_convert_command(ifstream & IN);
+inline Table& get_table(const string& name);
+inline Data_type get_type(const Table & table,const string& name);
+inline void LOAD_IN();
+
 
 int main (int num,char *file_name[]){
-    ifstream in;ofstream out;
+    // set input and output
     in.open(file_name[1]);
     out.open(file_name[2]);
-    // get_command(in);
+    cout<<"0000000000\n";
+    //lead in database
+    LOAD_IN();
+
+    // read_process_command
     while(!in.eof()){
-        cout<<"COMMAND:\n";
-        auto a=get_command(in);
-        cout<<a.get_command_type()<<endl;
-        auto g=a.get_parameter();
-        cout<<g.size()<<endl;
-        for(int i=0;i<g.size();i++){
-            visit([](auto a){
-                cout<<a<<endl;
-            },g[i]);
+        Command_line a=get_convert_command(in);
+    }
+
+}
+
+inline void LOAD_IN(){
+    // ...
+}
+
+inline void convert_data(const Data_type & Type,Parameter_content &command){
+    stringstream GG;
+    int INT;float FLO;
+    if(Type==INTEGER){
+        GG<<get<string>(command);
+        GG>>INT;
+        command=INT;
+    }
+    else if(Type==FLOAT){
+        GG<<get<string>(command);
+        GG>>FLO;
+        command=FLO;
+    }
+}
+
+inline void convert_data(const Data_type & Type,Table_content &command){
+    stringstream GG;
+    int INT;float FLO;
+    if(Type==INTEGER){
+        GG<<get<string>(command);
+        GG>>INT;
+        command=INT;
+    }
+    else if(Type==FLOAT){
+        GG<<get<string>(command);
+        GG>>FLO;
+        command=FLO;
+    }
+}
+
+inline Command_line get_convert_command(ifstream & IN){
+    Command_line command=get_command(IN);
+    stringstream LIN;int INT;float FLO;
+    if(command.command_type==INSERT_INTO){
+        Table& table=get_table(get<string>(command.parameter[0]));
+        for(int i=command.parameter.size()-1;i;i--){
+            convert_data(table.data_type[i],command.parameter[i]);
         }
     }
+    else if(command.command_type==SELECT_FROM){
+        Table& table=get_table(get<string>(command.parameter[2]));
+        if(command.parameter[command.parameter.size()-1].index()==CONDITION){
+            auto condition=get<Condition>(command.parameter[command.parameter.size()-1]);
+            for(int i=condition.size()-1;i>=0;i--){
+                convert_data(get_type(table,condition[i].column.column_name),condition[i].content);
+            }
+            command.parameter[command.parameter.size()-1]=condition;
+        }
+    }
+    else if(command.command_type==UPDATE_SET_WHERE){
+        Table& table=get_table(get<string>(command.parameter[0]));
+        if(command.parameter[command.parameter.size()-1].index()==CONDITION){
+            auto condition=get<Condition>(command.parameter[command.parameter.size()-1]);
+            for(int i=condition.size()-1;i>=0;i--){
+                convert_data(get_type(table,condition[i].column.column_name),condition[i].content);
+            }
+            command.parameter[command.parameter.size()-1]=condition;
+        }
+        auto sets=get<Set_configs>(command.parameter[1]);
+        for(int i=sets.size()-1;i>=0;i--){
+            convert_data(get_type(table,sets[i].column),sets[i].content);
+        }
+        command.parameter[1]=sets;
+    }
+    else if(command.command_type==DELETE_FROM_WHERE){
+        Table& table=get_table(get<string>(command.parameter[0]));
+        if(command.parameter[command.parameter.size()-1].index()==CONDITION){
+            auto condition=get<Condition>(command.parameter[command.parameter.size()-1]);
+            for(int i=condition.size()-1;i>=0;i--){
+                convert_data(get_type(table,condition[i].column.column_name),condition[i].content);
+            }
+            command.parameter[command.parameter.size()-1]=condition;
+        }
+    }
+    while(!in.eof()&&_is_empty((char)in.get())); if(!in.eof()) in.unget();
+    return command;
+}
+
+inline Table& get_table(const string& name){
+    if(Database_index==-1) exit(0);
+    for(int i=database[Database_index].data.size()-1;i>=0;i--){
+        if(name==database[Database_index].data[i].Table_name) return database[Database_index].data[i];
+    }
+    //****************************************************************************************************************************
+}
+
+inline Data_type get_type(const Table & table,const string& name){
+    for(int i=table.column_name.size()-1;i>=0;i--){
+        if(table.column_name[i]==name) return table.data_type[i];
+    }
+    return ERROR_TYPE;
 }
