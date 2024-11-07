@@ -10,7 +10,7 @@
 
 2. ` USE DATABASE database_name` 
 
-3. ` CREATE TABLE table_name ( column1_name column1_type, column2_name column2_type, column3_name column3_type, ... );`
+3. `CREATE TABLE table_name ( column1_name column1_type, column2_name column2_type, column3_name column3_type, ... );`
 
     In this project, minidb will support a simplified CREATE TABLE command with three data types: FLOAT, TEXT, and INTEGER. This command allows users to define a table by specifying its name and columns. Each column must have a unique name and one of the three supported data types.
 
@@ -32,7 +32,7 @@
 
 9. `UPDATE table_name SET column1 = new_value1, column2 = new_value2, ... WHERE condition;`
 
-10. `DELETEFROMtable_name WHERE condition;`
+10. `DELETE FROM table_name WHERE condition;`
 
 ## Format of the Output
 
