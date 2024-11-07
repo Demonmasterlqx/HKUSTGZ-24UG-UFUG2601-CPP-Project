@@ -94,6 +94,8 @@ class Command_line{
 
 class Table{
     public:
+    Table()=default;
+    Table(const vector<string>& a,const vector<Data_type>& b):column_name(a),data_type(b){}
     string Table_name;
     vector<string> column_name;
     vector<Data_type> data_type;
@@ -102,6 +104,8 @@ class Table{
 
 class Database{
     public:
+    Database()=default;
+    Database(const string & name):data_base_name(name){}
     string data_base_name;
     vector<Table> data;
 };
@@ -128,4 +132,7 @@ ostream & operator<<(ostream& a,const Column_pos& b);
 ostream & operator<<(ostream& a,const Table_content& b);
 ostream & operator<<(ostream& a,const Set_config& b);
 ostream & operator<<(ostream& a,const Set_configs& b);
+
+inline bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
+inline Data_type what_type(const string & a);
 #endif

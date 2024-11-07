@@ -11,6 +11,9 @@ inline Table& get_table(const string& name);
 inline Data_type get_type(const Table & table,const string& name);
 inline void LOAD_IN();
 
+inline bool create_database(const string& database_name);
+inline bool create_table(const Command_line& line);
+inline bool use_database(const string& database_name);
 
 int main (int num,char *file_name[]){
     // set input and output
@@ -23,6 +26,9 @@ int main (int num,char *file_name[]){
     // read_process_command
     while(!in.eof()){
         Command_line a=get_convert_command(in);
+        if(a.command_type==CREATE_DATABASE) create_database(get<string>(a.parameter[0]));
+        else if(a.command_type==USE_DATABASE) use_database(get<string>(a.parameter[0]));
+        else if(a.command_type==CREATE_TABLE) create_table(a);
     }
 
 }
@@ -122,4 +128,32 @@ inline Data_type get_type(const Table & table,const string& name){
         if(table.column_name[i]==name) return table.data_type[i];
     }
     return ERROR_TYPE;
+}
+
+inline bool create_database(const string& database_name){
+    for(int i=database.size()-1;i>=0;i--){
+        if(database[i].data_base_name==database_name) return 0;
+    }
+    database.push_back(Database(database_name));
+    return 1;
+}
+
+inline bool use_database(const string& database_name){
+    for(int i=database.size()-1;i>=0;i--){
+        if(database[i].data_base_name==database_name){
+            Database_index=i;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+inline bool create_table(const Command_line& line){
+    vector<string> name;
+    vector<Data_type> ty;
+    for(int j=line.parameter.size()-1,i=1;i<=j;i+=2){
+        name.push_back(get<string>(line.parameter[i]));
+        ty.push_back(what_type(get<string>(line.parameter[i])));
+    }
+    return _create_table(database[Database_index],get<string>(line.parameter[0]),name,ty);
 }
