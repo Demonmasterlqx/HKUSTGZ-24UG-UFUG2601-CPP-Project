@@ -13,10 +13,13 @@ class Command_line;
 class Table;
 class Database;
 struct Visitor;
+struct Column_pos;
+struct Set_config;
 
-typedef vector<Condition_parameter> condition;
+typedef vector<Condition_parameter> Condition;
+typedef vector<Set_config> Set_configs;
 typedef variant<string,int,float> Table_content;
-typedef variant<string,int,float,condition> Parameter_content;
+typedef variant<string,int,float,Condition,Column_pos,Set_configs> Parameter_content;
 typedef vector<vector<Table_content>> Table_row;
 typedef vector<Parameter_content> Parameter;
 
@@ -35,7 +38,6 @@ enum Command_type:int{
     DROP_TABLE,
     INSERT_INTO,
     SELECT_FROM,
-    SELECT_FROM_WHERE,
     SELECT_FROM_INNER_JOIN_ON,
     UPDATE_SET_WHERE,
     DELETE_FROM_WHERE,
@@ -45,21 +47,38 @@ enum Command_type:int{
 enum Compare_sign:int{
     EQUAL,
     BIGER,
-    SMALLER
+    SMALLER,
+    ERROR_COMPARE_SIGN
 };
 
 enum BOOL_OP:int{
     AND,
-    OR
+    OR,
+    ERROR_BOOL_OP
+};
+
+struct Column_pos{
+    // Column_pos(const string &v1,const string& v2);
+    Column_pos(const string &v1);
+    Column_pos()=default;
+    string table_name;
+    string column_name;
 };
 
 struct Condition_parameter{
+    Condition_parameter(const BOOL_OP &pre,const string &v1,const string &v2,const string & op);
     BOOL_OP pre_bool_op;
-    string column;
+    Column_pos column;
     Compare_sign sign;
     Table_content content;
 };
 
+struct Set_config{
+    Set_config()=default;
+    Set_config(const string & v1,const string & v2);
+    string column;
+    Table_content content;
+};
 
 class Command_line{
     public:
@@ -93,16 +112,18 @@ struct Visitor {
 
 Command_line get_command(ifstream & IN);
 
-// template <typename... T>
-// requires std::same_as<T,Table_content> || std::same_as<T,Parameter_content>
-void get_Data_type(const Parameter_content &C){
-    if(C.index()==TEXT) 
-    if(C.index()==INTEGER) return INTEGER;
-    if(C.index()==FLOAT) return FLOAT;
-    if(C.index()==CONDITION) return CONDITION;
-    return ERROR_TYPE;
-}
+inline bool _is_empty(const char & a);
 
-// template Data_type get_Data_type<string,int,float,condition>(const variant<string,int,float,condition> &C);
+inline bool is_special(const char & a);
 
+inline bool is_special(const string & a);
+
+inline void get_quotation_content(string & a,stringstream & input);
+
+ostream & operator<<(ostream& a,const Condition_parameter& b);
+ostream & operator<<(ostream& a,const Condition& b);
+ostream & operator<<(ostream& a,const Column_pos& b);
+ostream & operator<<(ostream& a,const Table_content& b);
+ostream & operator<<(ostream& a,const Set_config& b);
+ostream & operator<<(ostream& a,const Set_configs& b);
 #endif
