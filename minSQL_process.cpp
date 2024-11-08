@@ -108,3 +108,27 @@ bool _updata_set_where(Table& table,const Set_configs & set,const Condition & co
     }
     return 1;
 }
+
+bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
+    Table ans;
+    ans.Table_name=table2.Table_name;
+    ans.column_name.push_back(pos1.column_name);
+    ans.column_name.push_back(pos2.column_name);
+    ans.data_type.push_back(which_column_type(table1,pos1.column_name));
+    ans.data_type.push_back(which_column_type(table2,pos2.column_name));
+
+    int cpos1=which_column(table1,con1.column_name),cpos2=which_column(table2,con2.column_name);
+    int lr1=table1.row.size(),lr2=table2.row.size();
+    int tag1=which_column(table1,pos1.column_name),tag2=which_column(table2,pos2.column_name);
+    for(int i=0;i<lr1;i++){
+        for(int e=0;e<lr2;e++){
+            if(table1.row[i][cpos1]!=table2.row[e][cpos2]) continue;
+            vector<Table_content> LL;
+            LL.push_back(table1.row[i][tag1]);
+            LL.push_back(table2.row[e][tag2]);
+            ans.row.push_back(LL);
+        }
+    }
+    table2=ans;
+    return 1;
+}

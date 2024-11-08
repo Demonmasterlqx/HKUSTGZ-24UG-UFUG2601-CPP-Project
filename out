@@ -1,0 +1,10 @@
+ID,Name,CLASS
+1000,"Jay Chou","Microelectronics"
+1001,"Taylor Swift","Data Science"
+1001,"Taylor Swift","Machine Learning"
+1002,"Bob Dylan","Financial Technology"
+1003,"Omnipotent Youth Society","Mathematics"
+ID,Name,GPA
+1000,"Jay Chou",3
+1001,"Taylor Swift",3.2
+1002,"Bob Dylan",3.5

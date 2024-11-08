@@ -103,14 +103,9 @@ Command_line get_command(ifstream & IN){
         input>>para_string;
         para.push_back(para_string);
         input>>para_string; //ON
-        while(1){
-            input>>para_string>>para_string1>>para_string2;
-            condition.push_back(Condition_parameter(pre_sign,para_string,para_string2,para_string1));
-            input>>para_string;
-            if(para_string==";") break;
-            pre_sign=get_bool_type(para_string);
-        }
-        para.push_back(condition);
+        input>>para_string>>para_string1>>para_string2;
+        para.push_back(Column_pos(para_string));
+        para.push_back(Column_pos(para_string2));
     }
     else if(ans.find("SELECT")!=ans.npos&&ans.find("INNER JOIN")==ans.npos){
         type=SELECT_FROM;
@@ -312,3 +307,8 @@ void get_quotation_content(string & a,stringstream & input){
     }
     a=G.str();
 }
+
+// Set_config::Set_config(const string & v1){
+//     int pos=v1.find(".");
+    
+// }

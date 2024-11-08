@@ -78,6 +78,7 @@ struct Condition_parameter{
 struct Set_config{
     Set_config()=default;
     Set_config(const string & v1,const string & v2);
+    // Set_config(const string & v1);
     string column;
     Table_content content;
 };
@@ -147,4 +148,5 @@ bool _insert_into(Table& table,const vector<Parameter_content>& para);
 Table _select_from(const Table& table,const vector<string> &column,const Condition & con);
 bool _delete_from_where(Table& table,const Condition & con);
 bool _updata_set_where(Table& table,const Set_configs & set,const Condition & con);
+bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2);
 #endif
