@@ -1,19 +1,20 @@
-#include<bits/stdc++.h>
 #include "minSQL_struct.hpp"
+
+#include<bits/stdc++.h>
 using namespace std;
 
 vector<Database> database;
 ifstream in;ofstream out;
 int Database_index=-1;
 
-inline Command_line get_convert_command(ifstream & IN);
-inline Table& get_table(const string& name);
-inline Data_type get_type(const Table & table,const string& name);
-inline void LOAD_IN();
+Command_line get_convert_command(ifstream & IN);
+Table& get_table(const string& name);
+Data_type get_type(const Table & table,const string& name);
+void LOAD_IN();
 
-inline bool create_database(const string& database_name);
-inline bool create_table(const Command_line& line);
-inline bool use_database(const string& database_name);
+bool create_database(const string& database_name);
+bool create_table(const Command_line& line);
+bool use_database(const string& database_name);
 
 int main (int num,char *file_name[]){
     // set input and output
@@ -33,11 +34,11 @@ int main (int num,char *file_name[]){
 
 }
 
-inline void LOAD_IN(){
+void LOAD_IN(){
     // ...
 }
 
-inline void convert_data(const Data_type & Type,Parameter_content &command){
+void convert_data(const Data_type & Type,Parameter_content &command){
     stringstream GG;
     int INT;float FLO;
     if(Type==INTEGER){
@@ -52,7 +53,7 @@ inline void convert_data(const Data_type & Type,Parameter_content &command){
     }
 }
 
-inline void convert_data(const Data_type & Type,Table_content &command){
+void convert_data(const Data_type & Type,Table_content &command){
     stringstream GG;
     int INT;float FLO;
     if(Type==INTEGER){
@@ -67,7 +68,7 @@ inline void convert_data(const Data_type & Type,Table_content &command){
     }
 }
 
-inline Command_line get_convert_command(ifstream & IN){
+Command_line get_convert_command(ifstream & IN){
     Command_line command=get_command(IN);
     stringstream LIN;int INT;float FLO;
     if(command.command_type==INSERT_INTO){
@@ -115,22 +116,23 @@ inline Command_line get_convert_command(ifstream & IN){
     return command;
 }
 
-inline Table& get_table(const string& name){
+Table& get_table(const string& name){
     if(Database_index==-1) exit(0);
     for(int i=database[Database_index].data.size()-1;i>=0;i--){
         if(name==database[Database_index].data[i].Table_name) return database[Database_index].data[i];
     }
+    return *(new Table());
     //****************************************************************************************************************************
 }
 
-inline Data_type get_type(const Table & table,const string& name){
+Data_type get_type(const Table & table,const string& name){
     for(int i=table.column_name.size()-1;i>=0;i--){
         if(table.column_name[i]==name) return table.data_type[i];
     }
     return ERROR_TYPE;
 }
 
-inline bool create_database(const string& database_name){
+bool create_database(const string& database_name){
     for(int i=database.size()-1;i>=0;i--){
         if(database[i].data_base_name==database_name) return 0;
     }
@@ -138,7 +140,7 @@ inline bool create_database(const string& database_name){
     return 1;
 }
 
-inline bool use_database(const string& database_name){
+bool use_database(const string& database_name){
     for(int i=database.size()-1;i>=0;i--){
         if(database[i].data_base_name==database_name){
             Database_index=i;
@@ -148,7 +150,7 @@ inline bool use_database(const string& database_name){
     return 0;
 }
 
-inline bool create_table(const Command_line& line){
+bool create_table(const Command_line& line){
     vector<string> name;
     vector<Data_type> ty;
     for(int j=line.parameter.size()-1,i=1;i<=j;i+=2){

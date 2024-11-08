@@ -118,13 +118,13 @@ struct Visitor {
 
 Command_line get_command(ifstream & IN);
 
-inline bool _is_empty(const char & a);
+bool _is_empty(const char & a);
 
-inline bool is_special(const char & a);
+bool is_special(const char & a);
 
-inline bool is_special(const string & a);
+bool is_special(const string & a);
 
-inline void get_quotation_content(string & a,stringstream & input);
+void get_quotation_content(string & a,stringstream & input);
 
 ostream & operator<<(ostream& a,const Condition_parameter& b);
 ostream & operator<<(ostream& a,const Condition& b);
@@ -133,6 +133,6 @@ ostream & operator<<(ostream& a,const Table_content& b);
 ostream & operator<<(ostream& a,const Set_config& b);
 ostream & operator<<(ostream& a,const Set_configs& b);
 
-inline bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
-inline Data_type what_type(const string & a);
+bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
+Data_type what_type(const string & a);
 #endif

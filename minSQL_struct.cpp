@@ -217,15 +217,15 @@ Parameter Command_line::get_parameter(){
     return parameter;
 }
 
-inline bool is_special(const char & a){
+bool is_special(const char & a){
     return a==' '||a=='\n'||a==')'||a=='('||a==','||a=='\''||a==';'||a=='<'||a=='='||a=='>';
 }
 
-inline bool _is_empty(const char & a){
+bool _is_empty(const char & a){
     return a==' '||a=='\n';
 }
 
-inline bool is_special(const string & a){
+bool is_special(const string & a){
     if(a.length()>=2) return 0;
     return !(a[0]=='_'||('a'<=a[0]&&a[0]<'z')||('A'<=a[0]&&a[0]<'Z')||('1'<=a[0]&&a[0]<'9'));
 }
@@ -297,7 +297,7 @@ Set_config::Set_config(const string & v1,const string & v2){
     content=v2;
 }
 
-inline void get_quotation_content(string & a,stringstream & input){
+void get_quotation_content(string & a,stringstream & input){
     if(a[0]!='\'') return;
     for(int i=a.length();i;i--) input.unget();
     input.get();
