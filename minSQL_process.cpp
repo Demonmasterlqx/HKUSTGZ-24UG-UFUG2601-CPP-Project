@@ -87,3 +87,11 @@ int which_column(const Table & table,const string & column){
 Data_type which_column_type(const Table & table,const string & column){
     return table.data_type[which_column(table,column)];
 }
+
+bool _delete_from_where(Table& table,const Condition & con){
+    int len=table.row.size();
+    for(int i=len-1;i>=0;i--){
+        if(check_condition(table,con,i)) table.row.erase(table.row.begin()+i);
+    }
+    return 1;
+}

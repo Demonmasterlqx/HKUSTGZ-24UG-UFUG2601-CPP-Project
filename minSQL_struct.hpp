@@ -145,4 +145,5 @@ bool make_comp(Table_content a,Table_content b,Compare_sign op);
 bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
 bool _insert_into(Table& table,const vector<Parameter_content>& para);
 Table _select_from(const Table& table,const vector<string> &column,const Condition & con);
+bool _delete_from_where(Table& table,const Condition & con);
 #endif

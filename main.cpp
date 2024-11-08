@@ -19,6 +19,7 @@ bool use_database(const string& database_name);
 bool drop_table(const Command_line& line);
 bool inset_into(const Command_line& line);
 bool select_from(const Command_line& line);
+bool delete_from_where(const Command_line& line);
 
 int main (int num,char *file_name[]){
     // set input and output
@@ -30,15 +31,13 @@ int main (int num,char *file_name[]){
     // read_process_command
     while(!in.eof()){
         Command_line a=get_convert_command(in);
-        int G=0;
-        G++;
-        cout<<G<<endl;
         if(a.command_type==CREATE_DATABASE) create_database(get<string>(a.parameter[0]));
         else if(a.command_type==USE_DATABASE) use_database(get<string>(a.parameter[0]));
         else if(a.command_type==CREATE_TABLE) create_table(a);
         else if(a.command_type==DROP_TABLE) drop_table(a);
         else if(a.command_type==INSERT_INTO) inset_into(a);
         else if(a.command_type==SELECT_FROM) select_from(a);
+        else if(a.command_type==DELETE_FROM_WHERE) delete_from_where(a);
     }
 
 }
@@ -232,4 +231,8 @@ void write_in(ostream & out,const Table& c){
         }
         out<<endl;
     }
+}
+
+bool delete_from_where(const Command_line& line){
+    return _delete_from_where(get_table(get<string>(line.parameter[0])),get<CONDITION>(line.parameter[1]));
 }
