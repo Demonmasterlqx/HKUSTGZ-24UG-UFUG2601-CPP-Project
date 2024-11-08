@@ -1,7 +1,10 @@
 #include "minSQL_struct.hpp"
 
 #include<bits/stdc++.h>
+#include <direct.h>
 using namespace std;
+
+const string PATH="./Databasedir";
 
 vector<Database> database;
 ifstream in;ofstream out;
@@ -10,7 +13,8 @@ int Database_index=-1;
 Command_line get_convert_command(ifstream & IN);
 Table& get_table(const string& name);
 Data_type get_type(const Table & table,const string& name);
-void LOAD_IN();
+void load_in();
+void write_in();
 void write_in(ostream & out,const Table& c);
 
 bool create_database(const string& database_name);
@@ -28,7 +32,7 @@ int main (int num,char *file_name[]){
     in.open(file_name[1]);
     out.open(file_name[2]);
     //lead in database
-    LOAD_IN();
+    load_in();
 
     // read_process_command
     while(!in.eof()){
@@ -42,8 +46,8 @@ int main (int num,char *file_name[]){
         else if(a.command_type==DELETE_FROM_WHERE) delete_from_where(a);
         else if(a.command_type==UPDATE_SET_WHERE) updata_set_where(a);
         else if(a.command_type==SELECT_FROM_INNER_JOIN_ON) select_from_inner_join_on(a);
+        write_in();
     }
-
 }
 
 void LOAD_IN(){
@@ -247,4 +251,8 @@ bool updata_set_where(const Command_line& line){
 
 bool select_from_inner_join_on(const Command_line& line){
     return _select_from_inner_join_on(get<Column_pos>(line.parameter[0]),get<Column_pos>(line.parameter[1]),get_table(get<string>(line.parameter[2])),get_table(get<string>(line.parameter[3])),get<Column_pos>(line.parameter[4]),get<Column_pos>(line.parameter[5]));
+}
+
+void write_in(){
+    if(access(PATH.c_str())==-1) 
 }
