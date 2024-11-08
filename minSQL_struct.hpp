@@ -95,7 +95,7 @@ class Command_line{
 class Table{
     public:
     Table()=default;
-    Table(const vector<string>& a,const vector<Data_type>& b):column_name(a),data_type(b){}
+    Table(const string & name,const vector<string>& a,const vector<Data_type>& b):Table_name(name),column_name(a),data_type(b){}
     string Table_name;
     vector<string> column_name;
     vector<Data_type> data_type;
@@ -133,6 +133,16 @@ ostream & operator<<(ostream& a,const Table_content& b);
 ostream & operator<<(ostream& a,const Set_config& b);
 ostream & operator<<(ostream& a,const Set_configs& b);
 
-bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
 Data_type what_type(const string & a);
+int which_column(const Table & table,const string & column);
+Data_type which_column_type(const Table & table,const string & column);
+void push_into_vector(vector<Table_content> & table,const Parameter_content& c);
+
+Table_content get_cell(const Table& table,const string & column,const int row);
+bool check_condition(const Table& table,const Condition & con,const int row);
+bool make_comp(Table_content a,Table_content b,Compare_sign op);
+
+bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
+bool _insert_into(Table& table,const vector<Parameter_content>& para);
+Table _select_from(const Table& table,const vector<string> &column,const Condition & con);
 #endif

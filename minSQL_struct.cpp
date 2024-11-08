@@ -8,7 +8,7 @@ Command_line get_command(ifstream & IN){
     Parameter para;
     Condition condition;
     Set_configs sets;
-    BOOL_OP pre_sign=OR;
+    BOOL_OP pre_sign=AND;
     bool in_=0;
     auto get_bool_type=[](const string &para_string){
         if(para_string=="OR") return OR;
@@ -129,6 +129,8 @@ Command_line get_command(ifstream & IN){
                 if(!input.eof()) input>>para_string;
                 else return Command_line(ERROR_COMMAND,Parameter());
                 if(para_string=="FROM") break;
+                else if(para_string==",") continue;
+                para.push_back(para_string);
             }
         }
         input>>para_string;
