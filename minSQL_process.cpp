@@ -95,3 +95,16 @@ bool _delete_from_where(Table& table,const Condition & con){
     }
     return 1;
 }
+
+bool _updata_set_where(Table& table,const Set_configs & set,const Condition & con){
+    vector<int> setpos;
+    int lenc=set.size(),lenr=table.row.size();
+    for(int i=0;i<lenc;i++) setpos.push_back(which_column(table,set[i].column));
+    for(int i=0;i<lenr;i++){
+        if(!check_condition(table,con,i)) continue;
+        for(int e=0;e<lenc;e++){
+            table.row[i][setpos[e]]=set[e].content;
+        }
+    }
+    return 1;
+}

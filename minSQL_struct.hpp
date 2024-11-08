@@ -146,4 +146,5 @@ bool _create_table(Database & base,const string &name,const vector<string>& cnam
 bool _insert_into(Table& table,const vector<Parameter_content>& para);
 Table _select_from(const Table& table,const vector<string> &column,const Condition & con);
 bool _delete_from_where(Table& table,const Condition & con);
+bool _updata_set_where(Table& table,const Set_configs & set,const Condition & con);
 #endif

@@ -20,6 +20,7 @@ bool drop_table(const Command_line& line);
 bool inset_into(const Command_line& line);
 bool select_from(const Command_line& line);
 bool delete_from_where(const Command_line& line);
+bool updata_set_where(const Command_line& line);
 
 int main (int num,char *file_name[]){
     // set input and output
@@ -38,6 +39,7 @@ int main (int num,char *file_name[]){
         else if(a.command_type==INSERT_INTO) inset_into(a);
         else if(a.command_type==SELECT_FROM) select_from(a);
         else if(a.command_type==DELETE_FROM_WHERE) delete_from_where(a);
+        else if(a.command_type==UPDATE_SET_WHERE) updata_set_where(a);
     }
 
 }
@@ -235,4 +237,8 @@ void write_in(ostream & out,const Table& c){
 
 bool delete_from_where(const Command_line& line){
     return _delete_from_where(get_table(get<string>(line.parameter[0])),get<CONDITION>(line.parameter[1]));
+}
+
+bool updata_set_where(const Command_line& line){
+    return _updata_set_where(get_table(get<string>(line.parameter[0])),get<Set_configs>(line.parameter[1]), line.parameter.size()==3 ? get<Condition>(line.parameter[2]) : Condition());
 }
