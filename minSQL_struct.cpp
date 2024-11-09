@@ -42,17 +42,24 @@ Command_line get_command(ifstream & IN){
     if(ans.find("CREATE DATABASE")!=ans.npos){
         type=CREATE_DATABASE;
         input>>para_string>>para_string>>para_string;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);
+        input>>para_string;
+        if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
         // para.insert()
     }
     else if(ans.find("USE DATABASE")!=ans.npos){
         type=USE_DATABASE;
         input>>para_string>>para_string>>para_string;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);
+        input>>para_string;
+        if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
     }
     else if(ans.find("CREATE TABLE")!=ans.npos){
         type=CREATE_TABLE;
         input>>para_string>>para_string>>para_string;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);
         input>>para_string;
         if(para_string!="(") return Command_line(ERROR_COMMAND,Parameter());
@@ -66,11 +73,16 @@ Command_line get_command(ifstream & IN){
             if(para_string==")") break;
             if(para_string!=",") return Command_line(ERROR_COMMAND,Parameter());
         }
+        input>>para_string;
+        if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
     }
     else if(ans.find("DROP TABLE")!=ans.npos){
         type=DROP_TABLE;
         input>>para_string>>para_string>>para_string;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);
+        input>>para_string;
+        if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
     }
     else if(ans.find("INSERT INTO")!=ans.npos){
         type=INSERT_INTO;
@@ -84,29 +96,40 @@ Command_line get_command(ifstream & IN){
             input>>para_string;
             // if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
             get_quotation_content(para_string,input);
+            if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
             para.push_back(para_string);
             input>>para_string;
             if(para_string==")") break;
             if(para_string!=",") return Command_line(ERROR_COMMAND,Parameter());
         }
+        input>>para_string;
+        if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
     }
     else if(ans.find("SELECT")!=ans.npos&&ans.find("INNER JOIN")!=ans.npos){
         type=SELECT_FROM_INNER_JOIN_ON;
         input>>para_string;//SELECT
         //get column
         input>>para_string>>para_string1>>para_string1;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
+        if(is_special(para_string1)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(Column_pos(para_string));
         para.push_back(Column_pos(para_string1));
         input>>para_string; //FROM
         input>>para_string;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);
         input>>para_string>>para_string; //INNER JOIN
         input>>para_string;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);
         input>>para_string; //ON
         input>>para_string>>para_string1>>para_string2;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
+        if(is_special(para_string2)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(Column_pos(para_string));
         para.push_back(Column_pos(para_string2));
+        input>>para_string;
+        if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
     }
     else if(ans.find("SELECT")!=ans.npos&&ans.find("INNER JOIN")==ans.npos){
         type=SELECT_FROM;
@@ -115,21 +138,21 @@ Command_line get_command(ifstream & IN){
         else return Command_line(ERROR_COMMAND,Parameter());
         if(para_string=="*"){
             para.push_back(para_string);
-            if(!input.eof()) input>>para_string;
-            else return Command_line(ERROR_COMMAND,Parameter());
+            input>>para_string;
             if(para_string!="FROM") return Command_line(ERROR_COMMAND,Parameter());
         }
         else{
             para.push_back(para_string);
             while(1){
-                if(!input.eof()) input>>para_string;
-                else return Command_line(ERROR_COMMAND,Parameter());
+                input>>para_string;
                 if(para_string=="FROM") break;
                 else if(para_string==",") continue;
+                if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
                 para.push_back(para_string);
             }
         }
         input>>para_string;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);
         //where
         input>>para_string;
@@ -137,16 +160,16 @@ Command_line get_command(ifstream & IN){
             while(1){
                 input>>para_string>>para_string1>>para_string2;
                 get_quotation_content(para_string2,input);
+                if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
+                if(is_special(para_string2)) return Command_line(ERROR_COMMAND,Parameter());
                 condition.push_back(Condition_parameter(pre_sign,para_string,para_string2,para_string1));
                 input>>para_string;
                 if(para_string==";") break;
                 pre_sign=get_bool_type(para_string);
             }
-            para.push_back(condition);
         }
-        else{
-            para.push_back(condition);
-        }
+        else if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
+        para.push_back(condition);
     }
     else if(ans.find("UPDATE")!=ans.npos){
         type=UPDATE_SET_WHERE;
@@ -157,10 +180,13 @@ Command_line get_command(ifstream & IN){
         while(1){
             input>>para_string3>>para_string1>>para_string2;
             input>>para_string;
+            if(is_special(para_string3)) return Command_line(ERROR_COMMAND,Parameter());
+            if(is_special(para_string2)) return Command_line(ERROR_COMMAND,Parameter());
             if(is_compute_op(para_string)==0) {sets.push_back(Set_config(para_string3,para_string2));}
             if(para_string=="WHERE"||para_string==";") break;
             input>>para_string1;
-            int a=3223;
+            if(is_special(para_string1)) return Command_line(ERROR_COMMAND,Parameter());
+            // cout<<"DDDDD\n";
             comparas.push_back(Compute_para(para_string3,para_string2,para_string1,para_string));
             input>>para_string;
             if(para_string=="WHERE"||para_string==";") break;
@@ -171,18 +197,23 @@ Command_line get_command(ifstream & IN){
             while(1){
                 input>>para_string>>para_string1>>para_string2;
                 get_quotation_content(para_string2,input);
+                if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
+                if(is_special(para_string2)) return Command_line(ERROR_COMMAND,Parameter());
                 condition.push_back(Condition_parameter(pre_sign,para_string,para_string2,para_string1));
                 input>>para_string;
                 if(para_string==";") break;
                 pre_sign=get_bool_type(para_string);
             }
         }
+        else if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(condition);
+        // cout<<"DSADASDA\n";
     }
     else if(ans.find("DELETE FROM")!=ans.npos){
         type=DELETE_FROM_WHERE;
         input>>para_string>>para_string;//DELETE FROM
         input>>para_string;
+        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);
         //where
         input>>para_string;
@@ -190,18 +221,19 @@ Command_line get_command(ifstream & IN){
             while(1){
                 input>>para_string>>para_string1>>para_string2;
                 get_quotation_content(para_string2,input);
+                if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
+                if(is_special(para_string2)) return Command_line(ERROR_COMMAND,Parameter());
                 condition.push_back(Condition_parameter(pre_sign,para_string,para_string2,para_string1));
                 input>>para_string;
                 if(para_string==";") break;
                 pre_sign=get_bool_type(para_string);
             }
-            para.push_back(condition);
         }
-        else{
-            para.push_back(condition);
-        }
+        else if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
+        para.push_back(condition);
     }
     else {return Command_line(ERROR_COMMAND,Parameter());}
+    if(input.fail()) return Command_line(ERROR_COMMAND,Parameter());
     return Command_line(type,para);
 }
 
@@ -228,6 +260,7 @@ bool _is_empty(const char & a){
 
 bool is_special(const string & a){
     if(a.length()>=2) return 0;
+    if(a.length()==0) return 1;
     return !(a[0]=='_'||('a'<=a[0]&&a[0]<'z')||('A'<=a[0]&&a[0]<'Z')||('1'<=a[0]&&a[0]<'9'));
 }
 

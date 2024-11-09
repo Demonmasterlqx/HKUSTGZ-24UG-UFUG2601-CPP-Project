@@ -41,7 +41,10 @@ int main (int num,char *file_name[]){
     load_in();
 
     // read_process_command
+    int Cnt=0;
     while(!in.eof()){
+        // cout<<Database_index<<endl;
+        Cnt++;
         Command_line a=get_convert_command(in);
         if(a.command_type==CREATE_DATABASE) create_database(get<string>(a.parameter[0]));
         else if(a.command_type==USE_DATABASE) use_database(get<string>(a.parameter[0]));
@@ -52,6 +55,7 @@ int main (int num,char *file_name[]){
         else if(a.command_type==DELETE_FROM_WHERE) delete_from_where(a);
         else if(a.command_type==UPDATE_SET_WHERE) updata_set_where(a);
         else if(a.command_type==SELECT_FROM_INNER_JOIN_ON) select_from_inner_join_on(a);
+        else if(a.command_type==ERROR_COMMAND) out<<"No. "<<Cnt<<"command is a bad command;\n",cout<<"No. "<<Cnt<<"command is a bad command;\n";
         write_in(Database_index);
     }
     in.close();
@@ -90,14 +94,17 @@ void convert_data(const Data_type & Type,Table_content &command){
 
 Command_line get_convert_command(ifstream & IN){
     Command_line command=get_command(IN);
+    while(!in.eof()&&_is_empty((char)in.get())); if(!in.eof()) in.unget();
     stringstream LIN;int INT;float FLO;
     if(command.command_type==INSERT_INTO){
+        if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
         Table& table=get_table(get<string>(command.parameter[0]));
         for(int i=command.parameter.size()-1,j=table.data_type.size()-1;i;j--,i--){
             convert_data(table.data_type[j],command.parameter[i]);
         }
     }
     else if(command.command_type==SELECT_FROM){
+        if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
         if(command.parameter[command.parameter.size()-1].index()==CONDITION){
             auto table=get_table(get<string>(command.parameter[command.parameter.size()-2]));
             auto condition=get<Condition>(command.parameter[command.parameter.size()-1]);
@@ -108,6 +115,7 @@ Command_line get_convert_command(ifstream & IN){
         }
     }
     else if(command.command_type==UPDATE_SET_WHERE){
+        if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
         Table& table=get_table(get<string>(command.parameter[0]));
         if(command.parameter[command.parameter.size()-1].index()==CONDITION){
             auto condition=get<Condition>(command.parameter[command.parameter.size()-1]);
@@ -123,6 +131,7 @@ Command_line get_convert_command(ifstream & IN){
         command.parameter[1]=sets;
     }
     else if(command.command_type==DELETE_FROM_WHERE){
+        if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
         Table& table=get_table(get<string>(command.parameter[0]));
         if(command.parameter[command.parameter.size()-1].index()==CONDITION){
             auto condition=get<Condition>(command.parameter[command.parameter.size()-1]);
@@ -132,7 +141,6 @@ Command_line get_convert_command(ifstream & IN){
             command.parameter[command.parameter.size()-1]=condition;
         }
     }
-    while(!in.eof()&&_is_empty((char)in.get())) cout<<0; if(!in.eof()) in.unget();
     return command;
 }
 
@@ -154,7 +162,7 @@ Data_type get_type(const Table & table,const string& name){
 
 bool create_database(const string& database_name){
     for(int i=database.size()-1;i>=0;i--){
-        if(database[i].data_base_name==database_name) return 0;
+        if(database[i].data_base_name==database_name) {cout<<"exist a same database ,creat fail\n";;return 0;}
     }
     database.push_back(Database(database_name));
     write_in(database.size()-1);
@@ -168,31 +176,41 @@ bool use_database(const string& database_name){
             return 1;
         }
     }
+    cout<<"database don't exist, use fail\n";
     return 0;
 }
 
 bool create_table(const Command_line& line){
     vector<string> name;
     vector<Data_type> ty;
+    if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
     for(int j=line.parameter.size()-1,i=1;i<=j;i+=2){
         name.push_back(get<string>(line.parameter[i]));
         ty.push_back(what_type(get<string>(line.parameter[i+1])));
     }
-    return _create_table(database[Database_index],get<string>(line.parameter[0]),name,ty);
+    if(_create_table(database[Database_index],get<string>(line.parameter[0]),name,ty)){
+        return 1;
+    }
+    else{
+        cout<<"exist a same table ,creat fail\n";
+        return 0;
+    }
 }
 
 bool drop_table(const Command_line& line){
+    if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
     string name=get<string>(line.parameter[0]);
-    if(Database_index==-1) return -1;
     int len=database[Database_index].data.size();
     auto &data=database[Database_index].data;
     for(int i=0;i<len;i++){
         if(data[i].Table_name==name) {data.erase(data.begin()+i);return 1;}
     }
+    cout<<"this table didn't exist\n";
     return 0;
 }
 
 bool inset_into(const Command_line& line){
+    if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
     vector<Parameter_content> para;
     int len=line.parameter.size();
     for(int i=1;i<len;i++) para.push_back(line.parameter[i]);
@@ -200,6 +218,7 @@ bool inset_into(const Command_line& line){
 }
 
 bool select_from(const Command_line& line){
+    if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
     Condition con;
     Table ans;
     vector<string> column;
@@ -247,14 +266,17 @@ void write_in(ostream & out,const Table& c){
 }
 
 bool delete_from_where(const Command_line& line){
+    if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
     return _delete_from_where(get_table(get<string>(line.parameter[0])),get<CONDITION>(line.parameter[1]));
 }
 
 bool updata_set_where(const Command_line& line){
+    if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
     return _updata_set_where(get_table(get<string>(line.parameter[0])),get<Set_configs>(line.parameter[1]),get<Compute_paras>(line.parameter[2]),get<Condition>(line.parameter[3]));
 }
 
 bool select_from_inner_join_on(const Command_line& line){
+    if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
     return _select_from_inner_join_on(get<Column_pos>(line.parameter[0]),get<Column_pos>(line.parameter[1]),get_table(get<string>(line.parameter[2])),get_table(get<string>(line.parameter[3])),get<Column_pos>(line.parameter[4]),get<Column_pos>(line.parameter[5]));
 }
 
