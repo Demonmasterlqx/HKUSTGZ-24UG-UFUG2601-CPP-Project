@@ -6,7 +6,8 @@ using namespace std;
 namespace fs=std::filesystem;
 
 const string STORTAGE_TAG="HKUSTGZUCUGCPPPROJECTSTORTAGE";
-std::filesystem::path current_PATH=std::filesystem::current_path();
+std::filesystem::path current_PATH=fs::current_path();
+// Attention: the store path is a subdir of that you at when calling 
 std::filesystem::path database_path=current_PATH/"database/";
 
 vector<Database> database;
@@ -294,7 +295,7 @@ void write_in(int Database_index){
 void print_out(ofstream & out,const Table_content & con){
     if(con.index()==INTEGER) out<<get<int>(con);
     else if(con.index()==FLOAT) out<<get<float>(con);
-    else if(con.index()==TEXT) out<<get<string>(con);
+    else if(con.index()==TEXT) out<<"'"<<get<string>(con)<<"'";
 }
 
 void load_in(){
@@ -325,6 +326,19 @@ void load_in(){
                 string aaa;
                 for(int j=0;j<num_c;j++){
                     in>>aaa;
+                    if(aaa[0]=='\''){
+                        int len=aaa.size();
+                        while(--len) in.unget();
+                        aaa="";
+                        stringstream G;
+                        char g=0;
+                        while(1){
+                            g=in.get();
+                            if(g=='\'') break;
+                            G<<g;
+                        }
+                        aaa=G.str();
+                    }
                     now_con.push_back(aaa);
                     convert_data(curtabel.data_type[j],now_con[j]);
                 }

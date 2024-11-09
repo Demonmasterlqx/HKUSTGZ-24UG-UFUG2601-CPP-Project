@@ -6,8 +6,14 @@ student
 ID 1
 Name 0
 GPA 2
-1000 Jay 0 
-3 1001 0 
-0 3.2 1002 
-Bob
-0 0
+1000 'Jay Chou' 6 
+1001 'Taylor Swift' 3.2 
+1002 'Bob Dylan' 3.5 
+course_enrollment
+2 4
+Name 0
+CLASS 0
+'Jay Chou' 'CPP' 
+'Taylor Swift' 'CTDL' 
+'Bob Dylan' 'English' 
+'Bob Dylan' 'Calculus' 
