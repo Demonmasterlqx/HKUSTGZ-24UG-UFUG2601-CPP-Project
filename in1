@@ -1,7 +1,0 @@
-
-
-SELECT * FROM course_enrollment;
-SELECT * FROM student;
-SELECT * FROM student;
-SELECT * FROM student;
-SELECT * FROM student;
