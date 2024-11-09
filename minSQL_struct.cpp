@@ -2,12 +2,13 @@
 
 Command_line get_command(ifstream & IN){
     stringstream input;
-    string ans,para_string,para_string1,para_string2;
+    string ans,para_string,para_string1,para_string2,para_string3;
     char lin=0;bool pre_empty=1;
     Command_type type=ERROR_COMMAND;
     Parameter para;
     Condition condition;
     Set_configs sets;
+    Compute_paras comparas;
     BOOL_OP pre_sign=AND;
     bool in_=0;
     auto get_bool_type=[](const string &para_string){
@@ -154,12 +155,18 @@ Command_line get_command(ifstream & IN){
         para.push_back(para_string);
         input>>para_string; //SET
         while(1){
-            input>>para_string>>para_string1>>para_string2;
-            sets.push_back(Set_config(para_string,para_string2));
+            input>>para_string3>>para_string1>>para_string2;
+            input>>para_string;
+            if(is_compute_op(para_string)==0) {sets.push_back(Set_config(para_string3,para_string2));}
+            if(para_string=="WHERE"||para_string==";") break;
+            input>>para_string1;
+            int a=3223;
+            comparas.push_back(Compute_para(para_string3,para_string2,para_string1,para_string));
             input>>para_string;
             if(para_string=="WHERE"||para_string==";") break;
         }// WHERE
         para.push_back(sets);
+        para.push_back(comparas);
         if(para_string=="WHERE"){
             while(1){
                 input>>para_string>>para_string1>>para_string2;
@@ -169,11 +176,8 @@ Command_line get_command(ifstream & IN){
                 if(para_string==";") break;
                 pre_sign=get_bool_type(para_string);
             }
-            para.push_back(condition);
         }
-        else{
-            para.push_back(condition);
-        }
+        para.push_back(condition);
     }
     else if(ans.find("DELETE FROM")!=ans.npos){
         type=DELETE_FROM_WHERE;
@@ -215,7 +219,7 @@ Parameter Command_line::get_parameter(){
 }
 
 bool is_special(const char & a){
-    return a==' '||a=='\n'||a==')'||a=='('||a==','||a=='\''||a==';'||a=='<'||a=='='||a=='>';
+    return a==' '||a=='\n'||a==')'||a=='('||a==','||a=='\''||a==';'||a=='<'||a=='='||a=='>'||a=='*'||a=='/'||a=='+'||a=='-';
 }
 
 bool _is_empty(const char & a){
@@ -308,7 +312,40 @@ void get_quotation_content(string & a,stringstream & input){
     a=G.str();
 }
 
-// Set_config::Set_config(const string & v1){
-//     int pos=v1.find(".");
-    
-// }
+bool is_compute_op(const string & a){
+    return a=="/"||a=="*"||a=="+"||a=="-";
+}
+
+Compute_op which_compute_op(const string & a){
+    if(a=="*") return MUT;
+    if(a=="/") return DIV;
+    if(a=="+") return ADD;
+    if(a=="-") return SUB;
+    return ERROR_COMPUTE_OP;
+}
+
+Com_content get_num_or_string(const string & a){
+    float lin;
+    stringstream C;
+    C<<a;
+    C>>lin;
+    if (C.fail()) return a;
+    else return lin;
+}
+
+Compute_para::Compute_para(const string &para1,const string &para2,const string &para3,const string &oper){
+    para[0]=para1;
+    op=which_compute_op(oper);
+    para[1]=get_num_or_string(para2);
+    para[2]=get_num_or_string(para3);
+}
+
+Data_type what_type(const int & a){
+    if(a==TEXT) return TEXT;
+    if(a==INTEGER) return INTEGER;
+    if(a==FLOAT) return FLOAT;
+    if(a==CONDITION) return CONDITION;
+    if(a==COLUMN_POS) return COLUMN_POS;
+    if(a==SET_CONFIGS) return SET_CONFIGS;
+    return ERROR_TYPE;
+}

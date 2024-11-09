@@ -1,10 +1,13 @@
 #include "minSQL_struct.hpp"
 
 #include<bits/stdc++.h>
-#include <direct.h>
+#include <filesystem>
 using namespace std;
+namespace fs=std::filesystem;
 
-const string PATH="./Databasedir";
+const string STORTAGE_TAG="HKUSTGZUCUGCPPPROJECTSTORTAGE";
+std::filesystem::path current_PATH=std::filesystem::current_path();
+std::filesystem::path database_path=current_PATH/"database/";
 
 vector<Database> database;
 ifstream in;ofstream out;
@@ -14,8 +17,9 @@ Command_line get_convert_command(ifstream & IN);
 Table& get_table(const string& name);
 Data_type get_type(const Table & table,const string& name);
 void load_in();
-void write_in();
+void write_in(int);
 void write_in(ostream & out,const Table& c);
+void print_out(ofstream & out,const Table_content & con);
 
 bool create_database(const string& database_name);
 bool create_table(const Command_line& line);
@@ -28,6 +32,7 @@ bool updata_set_where(const Command_line& line);
 bool select_from_inner_join_on(const Command_line& line);
 
 int main (int num,char *file_name[]){
+    cout<<database_path<<endl;
     // set input and output
     in.open(file_name[1]);
     out.open(file_name[2]);
@@ -46,12 +51,10 @@ int main (int num,char *file_name[]){
         else if(a.command_type==DELETE_FROM_WHERE) delete_from_where(a);
         else if(a.command_type==UPDATE_SET_WHERE) updata_set_where(a);
         else if(a.command_type==SELECT_FROM_INNER_JOIN_ON) select_from_inner_join_on(a);
-        write_in();
+        write_in(Database_index);
     }
-}
-
-void LOAD_IN(){
-    // ...
+    in.close();
+    out.close();
 }
 
 void convert_data(const Data_type & Type,Parameter_content &command){
@@ -153,6 +156,7 @@ bool create_database(const string& database_name){
         if(database[i].data_base_name==database_name) return 0;
     }
     database.push_back(Database(database_name));
+    write_in(database.size()-1);
     return 1;
 }
 
@@ -246,13 +250,88 @@ bool delete_from_where(const Command_line& line){
 }
 
 bool updata_set_where(const Command_line& line){
-    return _updata_set_where(get_table(get<string>(line.parameter[0])),get<Set_configs>(line.parameter[1]), line.parameter.size()==3 ? get<Condition>(line.parameter[2]) : Condition());
+    return _updata_set_where(get_table(get<string>(line.parameter[0])),get<Set_configs>(line.parameter[1]),get<Compute_paras>(line.parameter[2]),get<Condition>(line.parameter[3]));
 }
 
 bool select_from_inner_join_on(const Command_line& line){
     return _select_from_inner_join_on(get<Column_pos>(line.parameter[0]),get<Column_pos>(line.parameter[1]),get_table(get<string>(line.parameter[2])),get_table(get<string>(line.parameter[3])),get<Column_pos>(line.parameter[4]),get<Column_pos>(line.parameter[5]));
 }
 
-void write_in(){
-    if(access(PATH.c_str())==-1) 
+void write_in(int Database_index){
+    if(!(fs::exists(database_path)&&fs::is_directory(database_path))) fs::create_directories(database_path);
+    if(!(fs::exists(database_path)&&fs::is_directory(database_path))){
+        cerr<<"CRAET DIRECTORY FAIL, CAN'T STORE THE DATA\n";
+        return;
+    }
+    if(Database_index==-1) return;
+    const Database & now=database[Database_index];
+    fs::path now_da=database_path/now.data_base_name;
+    ofstream storeout;storeout.open(now_da);
+    cout<<now_da<<endl;
+    storeout<<STORTAGE_TAG<<endl;
+    storeout<<now.data_base_name<<endl;
+    storeout<<now.data.size()<<endl;
+    for(int i=0,top=now.data.size();i<top;i++){
+        const Table &now_table=now.data[i];
+        int lenc=now_table.column_name.size();
+        int lenr=now_table.row.size();
+        storeout<<now_table.Table_name<<endl;
+        storeout<<lenc<<" "<<lenr<<endl;
+        for(int e=0;e<lenc;e++){
+            storeout<<now_table.column_name[e]<<" "<<now_table.data_type[e]<<endl;
+        }
+        for(int e=0;e<lenr;e++){
+            for(int j=0;j<lenc;j++){
+                print_out(storeout,now_table.row[e][j]);
+                storeout<<" ";
+            }
+            storeout<<endl;
+        }
+    }
+    storeout.close();
+}
+
+void print_out(ofstream & out,const Table_content & con){
+    if(con.index()==INTEGER) out<<get<int>(con);
+    else if(con.index()==FLOAT) out<<get<float>(con);
+    else if(con.index()==TEXT) out<<get<string>(con);
+}
+
+void load_in(){
+    if(!(fs::exists(database_path)&&fs::is_directory(database_path))) fs::create_directories(database_path);
+    for(const auto& entry : fs::directory_iterator(database_path)) {
+        if (!fs::is_regular_file(entry.status())) continue;
+        ifstream in;in.open(entry.path());
+        string ID;
+        in>>ID;
+        if(ID!=STORTAGE_TAG) continue;
+        Database curdata;
+        in>>curdata.data_base_name;
+        int num_t=0;
+        in>>num_t;
+        for(int i=0;i<num_t;i++){
+            Table curtabel;
+            in>>curtabel.Table_name;
+            int num_c=0,num_r=0;
+            in>>num_c>>num_r;
+            string name_column;int _type=-1;
+            for(int e=0;e<num_c;e++){
+                in>>name_column>>_type;
+                curtabel.column_name.push_back(name_column);
+                curtabel.data_type.push_back(what_type(_type));
+            }
+            for(int e=0;e<num_r;e++){
+                vector<Table_content> now_con;
+                string aaa;
+                for(int j=0;j<num_c;j++){
+                    in>>aaa;
+                    now_con.push_back(aaa);
+                    convert_data(curtabel.data_type[j],now_con[j]);
+                }
+                curtabel.row.push_back(now_con);
+            }
+            curdata.data.push_back(curtabel);
+        }
+        database.push_back(curdata);
+    }
 }

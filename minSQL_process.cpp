@@ -96,17 +96,48 @@ bool _delete_from_where(Table& table,const Condition & con){
     return 1;
 }
 
-bool _updata_set_where(Table& table,const Set_configs & set,const Condition & con){
-    vector<int> setpos;
-    int lenc=set.size(),lenr=table.row.size();
+bool _updata_set_where(Table& table,const Set_configs & set,const Compute_paras & compara,const Condition & con){
+    vector<int> setpos,comparapos;
+    int lenc=set.size(),lenr=table.row.size(),lenco=compara.size();
     for(int i=0;i<lenc;i++) setpos.push_back(which_column(table,set[i].column));
+    for(int i=0;i<lenco;i++) comparapos.push_back(which_column(table,get<string>(compara[i].para[0])));
     for(int i=0;i<lenr;i++){
         if(!check_condition(table,con,i)) continue;
         for(int e=0;e<lenc;e++){
             table.row[i][setpos[e]]=set[e].content;
         }
     }
+    for(int i=0;i<lenr;i++){
+        if(!check_condition(table,con,i)) continue;
+        for(int e=0;e<lenco;e++){
+            updata_compute(table,i,table.row[i][comparapos[e]],compara[e],table.data_type[comparapos[e]]);
+        }
+    }
     return 1;
+}
+
+float get_num(const Table& table,const int & i,const Com_content & target){
+    if(target.index()!=TEXT) return get<float>(target);
+    int e=which_column(table,get<string>(target));
+    if(table.data_type[e]==INTEGER) return get<int>(table.row[i][e]);
+    if(table.data_type[e]==FLOAT) return get<float>(table.row[i][e]);
+    return 0;
+}
+
+float compute(int num1,int num2,Compute_op op){
+    if(op==MUT) return num1*num2;
+    if(op==SUB) return num1-num2;
+    if(op==DIV) return num1/num2;
+    if(op==ADD) return num1+num2;
+    return 0;
+}
+
+void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type){
+    float num1=get_num(table,i,com.para[1]);
+    float num2=get_num(table,i,com.para[2]);
+    float ans=compute(num1,num2,com.op);
+    if(_type==INTEGER) target=int(ans);
+    else if(_type==FLOAT) target=ans;
 }
 
 bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){

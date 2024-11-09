@@ -15,11 +15,14 @@ class Database;
 struct Visitor;
 struct Column_pos;
 struct Set_config;
+struct Compute_para;
 
 typedef vector<Condition_parameter> Condition;
+typedef variant<string,float> Com_content;
 typedef vector<Set_config> Set_configs;
+typedef vector<Compute_para> Compute_paras;
 typedef variant<string,int,float> Table_content;
-typedef variant<string,int,float,Condition,Column_pos,Set_configs> Parameter_content;
+typedef variant<string,int,float,Condition,Column_pos,Set_configs,Compute_paras> Parameter_content;
 typedef vector<vector<Table_content>> Table_row;
 typedef vector<Parameter_content> Parameter;
 
@@ -51,6 +54,14 @@ enum Compare_sign:int{
     BIGER,
     SMALLER,
     ERROR_COMPARE_SIGN
+};
+
+enum Compute_op{
+    ADD,
+    SUB,
+    DIV,
+    MUT,
+    ERROR_COMPUTE_OP
 };
 
 enum BOOL_OP:int{
@@ -93,6 +104,12 @@ class Command_line{
     Parameter parameter;
 };
 
+struct Compute_para{
+    Com_content para[3];
+    Compute_op op;
+    Compute_para(const string &para1,const string &para2,const string &para3,const string &op);
+};
+
 class Table{
     public:
     Table()=default;
@@ -120,10 +137,9 @@ struct Visitor {
 Command_line get_command(ifstream & IN);
 
 bool _is_empty(const char & a);
-
 bool is_special(const char & a);
-
 bool is_special(const string & a);
+bool is_compute_op(const string & a);
 
 void get_quotation_content(string & a,stringstream & input);
 
@@ -135,18 +151,23 @@ ostream & operator<<(ostream& a,const Set_config& b);
 ostream & operator<<(ostream& a,const Set_configs& b);
 
 Data_type what_type(const string & a);
+Data_type what_type(const int & a);
 int which_column(const Table & table,const string & column);
 Data_type which_column_type(const Table & table,const string & column);
 void push_into_vector(vector<Table_content> & table,const Parameter_content& c);
+Compute_op which_compute_op(const string & a);
 
 Table_content get_cell(const Table& table,const string & column,const int row);
 bool check_condition(const Table& table,const Condition & con,const int row);
 bool make_comp(Table_content a,Table_content b,Compare_sign op);
+void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type);
+float get_num(const Table& table,const int & i,const Com_content & target);
+float compute(int num1,int num2,Compute_op op);
 
 bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
 bool _insert_into(Table& table,const vector<Parameter_content>& para);
 Table _select_from(const Table& table,const vector<string> &column,const Condition & con);
 bool _delete_from_where(Table& table,const Condition & con);
-bool _updata_set_where(Table& table,const Set_configs & set,const Condition & con);
+bool _updata_set_where(Table& table,const Set_configs & set,const Compute_paras & compara,const Condition & con);
 bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2);
 #endif
