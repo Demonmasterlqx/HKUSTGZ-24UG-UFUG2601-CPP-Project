@@ -258,6 +258,7 @@ void write_in(ostream & out,const Table& c){
     for(int i=0;i<lenr;i++){
         for(int e=0;e<lenc;e++){
             if(c.data_type[e]==TEXT) out<<'\"'<<c.row[i][e]<<'\"';
+            else if(c.data_type[e]==FLOAT) out<<fixed<<setprecision(2)<<c.row[i][e];
             else out<<c.row[i][e];
             if(e!=lenc-1) out<<',';
         }
