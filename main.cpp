@@ -14,7 +14,12 @@ vector<Database> database;
 ifstream in;ofstream out;
 int Database_index=-1;
 
+/*
+用于获取并且将命令转化为正确的数据类型
+IN 用于指定文件流
+*/
 Command_line get_convert_command(ifstream & IN);
+
 Table& get_table(const string& name);
 Data_type get_type(const Table & table,const string& name);
 void load_in();
