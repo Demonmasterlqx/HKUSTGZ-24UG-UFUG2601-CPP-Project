@@ -9,20 +9,38 @@ enum Data_type:int;
 enum Command_type:int;
 enum Compare_sign:int;
 enum BOOL_OP:int;
+enum Compute_op:int;
 class Command_line;
 class Table;
 class Database;
 struct Visitor;
 struct Column_pos;
-struct Set_config;
+// struct Set_config;
 struct Compute_para;
 
+//用于where中的条件储存
 typedef vector<Condition_parameter> Condition;
-typedef variant<string,float> Com_content;
-typedef vector<Set_config> Set_configs;
+
+/*
+表示SET中的每一个单元是什么
+例如：GPA=(GPA*0.2)+2
+Com_content负责储存 "(" "GPA" "*" 0.2 ")" "+" 2
+*/
+typedef variant<string,float,Compute_op> Com_content;
+
+/*
+储存一整个等号左边的式子
+*/
+typedef vector<Com_content> Com_contents;
+
+// typedef vector<Set_config> Set_configs;
+
+/*
+储存了所有SET之后的表达式
+*/
 typedef vector<Compute_para> Compute_paras;
 typedef variant<string,int,float> Table_content;
-typedef variant<string,int,float,Condition,Column_pos,Set_configs,Compute_paras> Parameter_content;
+typedef variant<string,int,float,Condition,Column_pos,Compute_paras> Parameter_content;
 typedef vector<vector<Table_content>> Table_row;
 typedef vector<Parameter_content> Parameter;
 
@@ -32,7 +50,7 @@ enum Data_type:int{
     FLOAT,
     CONDITION,
     COLUMN_POS,
-    SET_CONFIGS,
+    COMPUTE_PARAS,
     ERROR_TYPE
 };
 
@@ -56,11 +74,13 @@ enum Compare_sign:int{
     ERROR_COMPARE_SIGN
 };
 
-enum Compute_op{
+enum Compute_op:int{
     ADD,
     SUB,
     DIV,
     MUT,
+    LEFT_PARENTHESIS,
+    RIGHT_PARENTHESIS,
     ERROR_COMPUTE_OP
 };
 
@@ -70,6 +90,7 @@ enum BOOL_OP:int{
     ERROR_BOOL_OP
 };
 
+//用于确定当前列在当前数据库中的具体位置
 struct Column_pos{
     // Column_pos(const string &v1,const string& v2);
     Column_pos(const string &v1);
@@ -78,6 +99,7 @@ struct Column_pos{
     string column_name;
 };
 
+//用于where中的条件储存
 struct Condition_parameter{
     Condition_parameter(const BOOL_OP &pre,const string &v1,const string &v2,const string & op);
     BOOL_OP pre_bool_op;
@@ -86,13 +108,13 @@ struct Condition_parameter{
     Table_content content;
 };
 
-struct Set_config{
-    Set_config()=default;
-    Set_config(const string & v1,const string & v2);
-    // Set_config(const string & v1);
-    string column;
-    Table_content content;
-};
+// struct Set_config{
+//     Set_config()=default;
+//     Set_config(const string & v1,const string & v2);
+//     // Set_config(const string & v1);
+//     string column;
+//     Table_content content;
+// };
 
 class Command_line{
     public:
@@ -104,10 +126,14 @@ class Command_line{
     Parameter parameter;
 };
 
+/* 
+用于 SET 中的计算数值部分
+储存了一个SET之后的表达式
+*/
 struct Compute_para{
-    Com_content para[3];
-    Compute_op op;
-    Compute_para(const string &para1,const string &para2,const string &para3,const string &op);
+    string target;
+    Com_contents sentence;
+    Compute_para(const string& tar,const Com_contents & sentence);
 };
 
 class Table{
@@ -160,9 +186,13 @@ Compute_op which_compute_op(const string & a);
 Table_content get_cell(const Table& table,const string & column,const int row);
 bool check_condition(const Table& table,const Condition & con,const int row);
 bool make_comp(Table_content a,Table_content b,Compare_sign op);
+//弃用
 void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type);
+void compute_translate_sentence(Table& table,const int & i,Table_content & target,const Data_type _type,const Com_contents & sentence);
+float compute_sentence(const Com_contents & sentence,int l,int r);
 float get_num(const Table& table,const int & i,const Com_content & target);
 float compute(int num1,int num2,Compute_op op);
+Com_content convert_com_contents(const string & con);
 
 bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
 bool _insert_into(Table& table,const vector<Parameter_content>& para);

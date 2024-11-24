@@ -129,11 +129,6 @@ Command_line get_convert_command(ifstream & IN){
             }
             command.parameter[command.parameter.size()-1]=condition;
         }
-        auto sets=get<Set_configs>(command.parameter[1]);
-        for(int i=sets.size()-1;i>=0;i--){
-            convert_data(get_type(table,sets[i].column),sets[i].content);
-        }
-        command.parameter[1]=sets;
     }
     else if(command.command_type==DELETE_FROM_WHERE){
         if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
@@ -278,7 +273,7 @@ bool delete_from_where(const Command_line& line){
 
 bool updata_set_where(const Command_line& line){
     if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
-    return _updata_set_where(get_table(get<string>(line.parameter[0])),get<Set_configs>(line.parameter[1]),get<Compute_paras>(line.parameter[2]),get<Condition>(line.parameter[3]));
+    return _updata_set_where(get_table(get<string>(line.parameter[0])),get<Compute_paras>(line.parameter[1]),get<Condition>(line.parameter[2]));
 }
 
 bool select_from_inner_join_on(const Command_line& line){

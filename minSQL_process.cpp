@@ -96,21 +96,19 @@ bool _delete_from_where(Table& table,const Condition & con){
     return 1;
 }
 
-bool _updata_set_where(Table& table,const Set_configs & set,const Compute_paras & compara,const Condition & con){
-    vector<int> setpos,comparapos;
-    int lenc=set.size(),lenr=table.row.size(),lenco=compara.size();
-    for(int i=0;i<lenc;i++) setpos.push_back(which_column(table,set[i].column));
-    for(int i=0;i<lenco;i++) comparapos.push_back(which_column(table,get<string>(compara[i].para[0])));
-    for(int i=0;i<lenr;i++){
-        if(!check_condition(table,con,i)) continue;
-        for(int e=0;e<lenc;e++){
-            table.row[i][setpos[e]]=set[e].content;
-        }
+bool _updata_set_where(Table& table,const Compute_paras & compara,const Condition & con){
+    vector<int> comparapos;
+    int lenr=table.row.size(),lenco=compara.size();
+    for(int i=0;i<lenco;i++){
+        comparapos.push_back(which_column(table,compara[i].target));
+        // compute_translate_sentence(table,which_column_type(table,compara[i].target),compara[i].sentence);
     }
     for(int i=0;i<lenr;i++){
         if(!check_condition(table,con,i)) continue;
-        for(int e=0;e<lenco;e++){
-            updata_compute(table,i,table.row[i][comparapos[e]],compara[e],table.data_type[comparapos[e]]);
+        for(int e=0,pos,tartype;e<lenco;e++){
+            pos=comparapos[e];
+            compute_translate_sentence(table,i,table.row[i][pos],table.data_type[pos],compara[e].sentence);
+            // updata_compute(table,i,table.row[i][comparapos[e]],compara[e],table.data_type[comparapos[e]]);
         }
     }
     return 1;
@@ -162,4 +160,58 @@ bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,co
     }
     table2=ans;
     return 1;
+}
+
+void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type,const Com_contents & sentence){
+    if(_type==TEXT){
+        target=get<string>(sentence[0]);
+        return;
+    }
+    for(int i=sentence.size()-1;i>=0;i--){
+        if(sentence[i].index()!=TEXT) continue;
+        int colum=which_column(table,get<string>(sentence[i]));
+        if(table.row[R][colum].index()==INTEGER) sentence[i]=get<int>table.row[R][colum];
+        if(table.row[R][colum].index()==FLOAT) sentence[i]=get<float>table.row[R][colum];
+    }
+    float ans=
+}
+
+float compute_sentence(const Com_contents & sentence,int l,int r){
+    if(l==r) return get<float> sentence[l];
+    float ans=0;
+    bool all=1;
+    int rr=r;
+    int ll=l;
+    Com_contents no_paranthesis;
+    while(ll<=r){
+        if(holds_alternative<Compute_op>(sentence[ll])){
+            int cnt=1;rr=ll;
+            while(cnt){
+                rr++;
+                cnt+=(get<Compute_op>(sentence[rr])==LEFT_PARENTHESIS ? 1 : -1);
+            }
+            no_paranthesis.push_back(compute_sentence(sentence,ll+1,rr-1));
+            ll=rr+1;
+        }
+        else{
+            no_paranthesis.push_back(sentence[ll]);
+            ll++;
+        }
+    }
+    int L=0,R=no_paranthesis.size()-1;
+    float lin=1;
+    Compute_op pre=MUT;
+    while(L<=R){
+        // while(L==R||(holds_alternative<Compute_op>(no_paranthesis[L+1])&&(get<Compute_op>(no_paranthesis[L+1])==ADD||get<Compute_op>(no_paranthesis[L+1])==SUB))){
+        //     ans+=lin;
+        //     if(L!=R){
+        //         if(get<Compute_op>(no_paranthesis[L+1])==SUB) lin=-1;
+        //         else if(get<Compute_op>(no_paranthesis[L+1])==ADD) lin=1;
+        //         pre=MUT;
+        //     }
+        // }
+        if(holds_alternative<Compute_op>(no_paranthesis[L])&&(get<Compute_op>(no_paranthesis[L])==ADD||get<Compute_op>(no_paranthesis[L])==SUB)){
+            ans+=lin;
+        }
+    }
 }
