@@ -1,4 +1,5 @@
 #include "minSQL_struct.hpp"
+#include "calculator.hpp"
 
 bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty){
     int top=base.data.size();
@@ -96,21 +97,19 @@ bool _delete_from_where(Table& table,const Condition & con){
     return 1;
 }
 
-bool _updata_set_where(Table& table,const Set_configs & set,const Compute_paras & compara,const Condition & con){
-    vector<int> setpos,comparapos;
-    int lenc=set.size(),lenr=table.row.size(),lenco=compara.size();
-    for(int i=0;i<lenc;i++) setpos.push_back(which_column(table,set[i].column));
-    for(int i=0;i<lenco;i++) comparapos.push_back(which_column(table,get<string>(compara[i].para[0])));
-    for(int i=0;i<lenr;i++){
-        if(!check_condition(table,con,i)) continue;
-        for(int e=0;e<lenc;e++){
-            table.row[i][setpos[e]]=set[e].content;
-        }
+bool _updata_set_where(Table& table,const Compute_paras & compara,const Condition & con){
+    vector<int> comparapos;
+    int lenr=table.row.size(),lenco=compara.size();
+    for(int i=0;i<lenco;i++){
+        comparapos.push_back(which_column(table,compara[i].target));
+        // compute_translate_sentence(table,which_column_type(table,compara[i].target),compara[i].sentence);
     }
     for(int i=0;i<lenr;i++){
         if(!check_condition(table,con,i)) continue;
-        for(int e=0;e<lenco;e++){
-            updata_compute(table,i,table.row[i][comparapos[e]],compara[e],table.data_type[comparapos[e]]);
+        for(int e=0,pos,tartype;e<lenco;e++){
+            pos=comparapos[e];
+            compute_translate_sentence(table,i,table.row[i][pos],table.data_type[pos],compara[e].sentence);
+            // updata_compute(table,i,table.row[i][comparapos[e]],compara[e],table.data_type[comparapos[e]]);
         }
     }
     return 1;
@@ -122,22 +121,6 @@ float get_num(const Table& table,const int & i,const Com_content & target){
     if(table.data_type[e]==INTEGER) return get<int>(table.row[i][e]);
     if(table.data_type[e]==FLOAT) return get<float>(table.row[i][e]);
     return 0;
-}
-
-float compute(int num1,int num2,Compute_op op){
-    if(op==MUT) return num1*num2;
-    if(op==SUB) return num1-num2;
-    if(op==DIV) return num1/num2;
-    if(op==ADD) return num1+num2;
-    return 0;
-}
-
-void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type){
-    float num1=get_num(table,i,com.para[1]);
-    float num2=get_num(table,i,com.para[2]);
-    float ans=compute(num1,num2,com.op);
-    if(_type==INTEGER) target=int(ans);
-    else if(_type==FLOAT) target=ans;
 }
 
 bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
@@ -162,4 +145,19 @@ bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,co
     }
     table2=ans;
     return 1;
+}
+
+void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type, Com_contents sentence){
+    if(_type==TEXT){
+        target=get<string>(sentence[0]);
+        return;
+    }
+    for(int i=sentence.size()-1;i>=0;i--){
+        if(sentence[i].index()!=TEXT) continue;
+        int colum=which_column(table,get<string>(sentence[i]));
+        if(table.row[R][colum].index()==INTEGER) sentence[i]=(float)get<int>(table.row[R][colum]);
+        if(table.row[R][colum].index()==FLOAT) sentence[i]=get<float>(table.row[R][colum]);
+    }
+    if(_type==INTEGER) target=(int)calculate_sentence(sentence);
+    if(_type==FLOAT) target=(float)calculate_sentence(sentence);
 }
