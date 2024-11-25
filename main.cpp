@@ -36,6 +36,9 @@ bool select_from(const Command_line& line);
 bool delete_from_where(const Command_line& line);
 bool updata_set_where(const Command_line& line);
 bool select_from_inner_join_on(const Command_line& line);
+bool is_num(const string & s);
+Condition convert_where_part(const Condition& condition);
+Data_type get_type(const Condition_parameter& con);
 
 int main (int num,char *file_name[]){
     cout<<database_path<<endl;
@@ -110,38 +113,45 @@ Command_line get_convert_command(ifstream & IN){
     }
     else if(command.command_type==SELECT_FROM){
         if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
-        if(command.parameter[command.parameter.size()-1].index()==CONDITION){
-            auto table=get_table(get<string>(command.parameter[command.parameter.size()-2]));
-            auto condition=get<Condition>(command.parameter[command.parameter.size()-1]);
-            for(int i=condition.size()-1;i>=0;i--){
-                convert_data(get_type(table,condition[i].column.column_name),condition[i].content);
-            }
-            command.parameter[command.parameter.size()-1]=condition;
-        }
+        command.parameter[command.parameter.size()-1]=convert_where_part(get<Condition>(command.parameter[command.parameter.size()-1]));
     }
     else if(command.command_type==UPDATE_SET_WHERE){
         if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
         Table& table=get_table(get<string>(command.parameter[0]));
-        if(command.parameter[command.parameter.size()-1].index()==CONDITION){
-            auto condition=get<Condition>(command.parameter[command.parameter.size()-1]);
-            for(int i=condition.size()-1;i>=0;i--){
-                convert_data(get_type(table,condition[i].column.column_name),condition[i].content);
-            }
-            command.parameter[command.parameter.size()-1]=condition;
-        }
+        command.parameter[command.parameter.size()-1]=convert_where_part(get<Condition>(command.parameter[command.parameter.size()-1]));
     }
     else if(command.command_type==DELETE_FROM_WHERE){
         if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
-        Table& table=get_table(get<string>(command.parameter[0]));
-        if(command.parameter[command.parameter.size()-1].index()==CONDITION){
-            auto condition=get<Condition>(command.parameter[command.parameter.size()-1]);
-            for(int i=condition.size()-1;i>=0;i--){
-                convert_data(get_type(table,condition[i].column.column_name),condition[i].content);
-            }
-            command.parameter[command.parameter.size()-1]=condition;
-        }
+        command.parameter[command.parameter.size()-1]=convert_where_part(get<Condition>(command.parameter[command.parameter.size()-1]));
     }
     return command;
+}
+
+Condition convert_where_part(const Condition& condition){
+    Condition ans;
+    for(auto i : condition){
+        i.result_type=get_type(i);
+        if(i.result_type==TEXT) {ans.push_back(i);continue;}
+        if(is_num(get<string>(i.contentl))) convert_data(FLOAT,i.contentl);
+        if(is_num(get<string>(i.contentr))) convert_data(FLOAT,i.contentr);
+        ans.push_back(i);
+    }
+    return ans;
+}
+
+Data_type get_type(const Condition_parameter& con){
+    if(con.is_string.first||con.is_string.second){
+        return TEXT;
+    }
+    return FLOAT;
+}
+
+bool is_num(const string & s){
+    stringstream in;
+    in<<s;
+    float lin;
+    in>>lin;
+    return !in.fail();
 }
 
 Table& get_table(const string& name){
