@@ -20,17 +20,18 @@ Command_line get_command(ifstream & IN){
         lin=IN.get();
         if(lin=='!'){
             if(IN.get()!='=') return Command_line(ERROR_COMMAND,Parameter());
-            if(pre_empty==1)input<<" ";
+            if(pre_empty==0) input<<" ";
             input<<"!= ";
             pre_empty=1;
+            continue;
         }
         // cout<<(int)lin<<endl;
         if(lin==-30) {IN.get(),IN.get();lin='\'';}
         if(lin=='\'') in_^=1;
         if(in_||lin=='\''){
-            if(pre_empty==1)input<<" ";
+            if(pre_empty==0)input<<" ";
             input<<lin;
-            pre_empty=0;
+            pre_empty=1;
         }
         else{
             if(is_special(lin)){
@@ -286,6 +287,7 @@ Condition_parameter::Condition_parameter(const BOOL_OP &pre,const string &v1,con
         if(op=="<") return SMALLER;
         if(op=="=") return EQUAL;
         if(op==">") return BIGER;
+        if(op=="!=") return NO_SAME;
         return ERROR_COMPARE_SIGN;
     };
     sign=get_type();

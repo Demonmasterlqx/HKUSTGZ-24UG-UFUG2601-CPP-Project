@@ -68,6 +68,7 @@ enum Compare_sign:int{
     EQUAL,
     BIGER,
     SMALLER,
+    NO_SAME,
     ERROR_COMPARE_SIGN
 };
 

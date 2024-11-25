@@ -74,6 +74,7 @@ bool make_comp(Table_content a,Table_content b,Compare_sign op){
     if(op==EQUAL) return a==b;
     if(op==BIGER) return a>b;
     if(op==SMALLER) return a<b;
+    if(op==NO_SAME) return a!=b;
     return 1;
 }
 
