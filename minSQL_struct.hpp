@@ -4,6 +4,8 @@ using namespace std;
 #ifndef __minSQL_struct__
 #define __minSQL_struct__
 
+#define mp make_pair
+
 struct Condition_parameter;
 enum Data_type:int;
 enum Command_type:int;
@@ -40,6 +42,7 @@ typedef variant<string,int,float> Table_content;
 typedef variant<string,int,float,Condition,Column_pos,Compute_paras> Parameter_content;
 typedef vector<vector<Table_content>> Table_row;
 typedef vector<Parameter_content> Parameter;
+typedef pair<bool,bool> pbb;
 
 enum Data_type:int{
     TEXT,
@@ -100,11 +103,12 @@ struct Column_pos{
 
 //用于where中的条件储存
 struct Condition_parameter{
-    Condition_parameter(const BOOL_OP &pre,const string &v1,const string &v2,const string & op);
+    Condition_parameter(const BOOL_OP &pre,const string &v1,const string &v2,const string & op,const pbb& is_string);
     BOOL_OP pre_bool_op;
-    Column_pos column;
     Compare_sign sign;
-    Table_content content;
+    Table_content contentl,contentr;
+    pbb is_string;
+    Data_type result_type=ERROR_TYPE;
 };
 
 class Command_line{
@@ -153,10 +157,10 @@ bool is_special(const char & a);
 bool is_special(const string & a);
 bool is_compute_op(const string & a);
 
-void get_quotation_content(string & a,stringstream & input);
+bool get_quotation_content(string & a,stringstream & input);
 
-ostream & operator<<(ostream& a,const Condition_parameter& b);
-ostream & operator<<(ostream& a,const Condition& b);
+// ostream & operator<<(ostream& a,const Condition_parameter& b);
+// ostream & operator<<(ostream& a,const Condition& b);
 ostream & operator<<(ostream& a,const Column_pos& b);
 ostream & operator<<(ostream& a,const Table_content& b);
 
@@ -173,7 +177,7 @@ bool make_comp(Table_content a,Table_content b,Compare_sign op);
 float get_num(const Table& table,const int & i,const Com_content & target);
 Com_content convert_com_contents(const string & con);
 void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type,Com_contents sentence);
-
+bool get_where(stringstream & input,Condition &condition,string & para_string,string & para_string1,string &para_string2);
 
 bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
 bool _insert_into(Table& table,const vector<Parameter_content>& para);

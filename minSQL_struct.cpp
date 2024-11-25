@@ -1,5 +1,11 @@
 #include "minSQL_struct.hpp"
 
+auto get_bool_type=[](const string &para_string){
+    if(para_string=="OR") return OR;
+    else if(para_string=="AND") return AND;
+    return ERROR_BOOL_OP;
+};
+
 Command_line get_command(ifstream & IN){
     stringstream input;
     string ans,para_string,para_string1,para_string2,para_string3;
@@ -9,13 +15,7 @@ Command_line get_command(ifstream & IN){
     Condition condition;
     // Set_configs sets;
     Compute_paras comparas;
-    BOOL_OP pre_sign=AND;
     bool in_=0;
-    auto get_bool_type=[](const string &para_string){
-        if(para_string=="OR") return OR;
-        else if(para_string=="AND") return AND;
-        return ERROR_BOOL_OP;
-    };
     while(1){
         lin=IN.get();
         if(lin=='!'){
@@ -165,16 +165,7 @@ Command_line get_command(ifstream & IN){
         //where
         input>>para_string;
         if(para_string=="WHERE"){
-            while(1){
-                input>>para_string>>para_string1>>para_string2;
-                get_quotation_content(para_string2,input);
-                if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
-                if(is_special(para_string2)) return Command_line(ERROR_COMMAND,Parameter());
-                condition.push_back(Condition_parameter(pre_sign,para_string,para_string2,para_string1));
-                input>>para_string;
-                if(para_string==";") break;
-                pre_sign=get_bool_type(para_string);
-            }
+            if(!get_where(input,condition,para_string,para_string1,para_string2)) return Command_line(ERROR_COMMAND,Parameter());
         }
         else if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(condition);
@@ -210,16 +201,7 @@ Command_line get_command(ifstream & IN){
         }// WHERE
         para.push_back(comparas);
         if(para_string=="WHERE"){
-            while(1){
-                input>>para_string>>para_string1>>para_string2;
-                get_quotation_content(para_string2,input);
-                if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
-                if(is_special(para_string2)) return Command_line(ERROR_COMMAND,Parameter());
-                condition.push_back(Condition_parameter(pre_sign,para_string,para_string2,para_string1));
-                input>>para_string;
-                if(para_string==";") break;
-                pre_sign=get_bool_type(para_string);
-            }
+            if(!get_where(input,condition,para_string,para_string1,para_string2)) return Command_line(ERROR_COMMAND,Parameter());
         }
         else if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(condition);
@@ -234,16 +216,7 @@ Command_line get_command(ifstream & IN){
         //where
         input>>para_string;
         if(para_string=="WHERE"){
-            while(1){
-                input>>para_string>>para_string1>>para_string2;
-                get_quotation_content(para_string2,input);
-                if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
-                if(is_special(para_string2)) return Command_line(ERROR_COMMAND,Parameter());
-                condition.push_back(Condition_parameter(pre_sign,para_string,para_string2,para_string1));
-                input>>para_string;
-                if(para_string==";") break;
-                pre_sign=get_bool_type(para_string);
-            }
+            if(!get_where(input,condition,para_string,para_string1,para_string2)) return Command_line(ERROR_COMMAND,Parameter());
         }
         else if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(condition);
@@ -280,36 +253,20 @@ bool is_special(const string & a){
     return !(a[0]=='_'||('a'<=a[0]&&a[0]<'z')||('A'<=a[0]&&a[0]<'Z')||('1'<=a[0]&&a[0]<'9'));
 }
 
-Condition_parameter::Condition_parameter(const BOOL_OP &pre,const string &v1,const string &v2,const string & op){
+Compare_sign get_compare_sign(const string& op){
+    if(op=="<") return SMALLER;
+    if(op=="=") return EQUAL;
+    if(op==">") return BIGER;
+    if(op=="!=") return NO_SAME;
+    return ERROR_COMPARE_SIGN;
+}
+
+Condition_parameter::Condition_parameter(const BOOL_OP &pre,const string &v1,const string &v2,const string & op,const pbb& is_string){
     pre_bool_op=pre;
-    column=Column_pos(v1);
-    auto get_type=[&op](){
-        if(op=="<") return SMALLER;
-        if(op=="=") return EQUAL;
-        if(op==">") return BIGER;
-        if(op=="!=") return NO_SAME;
-        return ERROR_COMPARE_SIGN;
-    };
-    sign=get_type();
-    content=v2;
-}
-
-// Column_pos::Column_pos(const string &v1,const string& v2){
-//     table_name=v1;
-//     column_name=v2;
-// }
-
-ostream & operator<<(ostream& a,const Condition_parameter& b){
-    a<<b.column.table_name<<"."<<b.column.column_name<<" "<<b.sign<<" "<<b.content;
-    return a;
-}
-
-ostream & operator<<(ostream& a,const Condition& b){
-    a<<"THERE ARE "<<b.size()<<" CONDITIONS"<<endl;
-    for(auto i : b){
-        a<<i;
-    }
-    return a;
+    sign=get_compare_sign(op);
+    contentr=v2;
+    contentl=v1;
+    this->is_string=is_string;
 }
 
 ostream & operator<<(ostream& a,const Column_pos& b){
@@ -330,8 +287,8 @@ Column_pos::Column_pos(const string& v1){
     else table_name=v1.substr(0,pos),column_name=v1.substr(pos+1);;
 }
 
-void get_quotation_content(string & a,stringstream & input){
-    if(a[0]!='\'') return;
+bool get_quotation_content(string & a,stringstream & input){
+    if(a[0]!='\'') return 0;
     for(int i=a.length();i;i--) input.unget();
     input.get();
     char lin=0;
@@ -342,6 +299,7 @@ void get_quotation_content(string & a,stringstream & input){
         G<<lin;
     }
     a=G.str();
+    return 1;
 }
 
 bool is_compute_op(const string & a){
@@ -389,4 +347,23 @@ Com_content convert_com_contents(const string & con){
     if(!IN.fail()) return tem;
     if(which_compute_op(con)!=ERROR_COMPUTE_OP) return which_compute_op(con);
     return con;
+}
+
+bool get_where(stringstream & input,Condition &condition,string & para_string,string & para_string1,string &para_string2){
+    BOOL_OP pre_sign=AND;
+    while(1){
+        pbb is_string=mp(0,0);
+        input>>para_string;
+        is_string.first=get_quotation_content(para_string,input);
+        input>>para_string1;
+        input>>para_string2;
+        is_string.second=get_quotation_content(para_string2,input);
+        if(is_special(para_string)) return 0;
+        if(is_special(para_string2)) return 0;
+        condition.push_back(Condition_parameter(pre_sign,para_string,para_string2,para_string1,is_string));
+        input>>para_string;
+        if(para_string==";") break;
+        pre_sign=get_bool_type(para_string);
+    }
+    return 1;
 }
