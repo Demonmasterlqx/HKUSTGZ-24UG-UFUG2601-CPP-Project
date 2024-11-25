@@ -1,4 +1,5 @@
 #include "minSQL_struct.hpp"
+#include "calculator.hpp"
 
 bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty){
     int top=base.data.size();
@@ -122,21 +123,21 @@ float get_num(const Table& table,const int & i,const Com_content & target){
     return 0;
 }
 
-float compute(int num1,int num2,Compute_op op){
-    if(op==MUT) return num1*num2;
-    if(op==SUB) return num1-num2;
-    if(op==DIV) return num1/num2;
-    if(op==ADD) return num1+num2;
-    return 0;
-}
+// float compute(int num1,int num2,Compute_op op){
+//     if(op==MUT) return num1*num2;
+//     if(op==SUB) return num1-num2;
+//     if(op==DIV) return num1/num2;
+//     if(op==ADD) return num1+num2;
+//     return 0;
+// }
 
-void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type){
-    float num1=get_num(table,i,com.para[1]);
-    float num2=get_num(table,i,com.para[2]);
-    float ans=compute(num1,num2,com.op);
-    if(_type==INTEGER) target=int(ans);
-    else if(_type==FLOAT) target=ans;
-}
+// void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type){
+//     float num1=get_num(table,i,com.para[1]);
+//     float num2=get_num(table,i,com.para[2]);
+//     float ans=compute(num1,num2,com.op);
+//     if(_type==INTEGER) target=int(ans);
+//     else if(_type==FLOAT) target=ans;
+// }
 
 bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
     Table ans;
@@ -162,7 +163,7 @@ bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,co
     return 1;
 }
 
-void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type,const Com_contents & sentence){
+void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type, Com_contents sentence){
     if(_type==TEXT){
         target=get<string>(sentence[0]);
         return;
@@ -170,48 +171,49 @@ void compute_translate_sentence(Table& table,const int & R,Table_content & targe
     for(int i=sentence.size()-1;i>=0;i--){
         if(sentence[i].index()!=TEXT) continue;
         int colum=which_column(table,get<string>(sentence[i]));
-        if(table.row[R][colum].index()==INTEGER) sentence[i]=get<int>table.row[R][colum];
-        if(table.row[R][colum].index()==FLOAT) sentence[i]=get<float>table.row[R][colum];
+        if(table.row[R][colum].index()==INTEGER) sentence[i]=(float)get<int>(table.row[R][colum]);
+        if(table.row[R][colum].index()==FLOAT) sentence[i]=get<float>(table.row[R][colum]);
     }
-    float ans=
+    if(_type==INTEGER) target=(int)calculate_sentence(sentence);
+    if(_type==FLOAT) target=(float)calculate_sentence(sentence);
 }
 
-float compute_sentence(const Com_contents & sentence,int l,int r){
-    if(l==r) return get<float> sentence[l];
-    float ans=0;
-    bool all=1;
-    int rr=r;
-    int ll=l;
-    Com_contents no_paranthesis;
-    while(ll<=r){
-        if(holds_alternative<Compute_op>(sentence[ll])){
-            int cnt=1;rr=ll;
-            while(cnt){
-                rr++;
-                cnt+=(get<Compute_op>(sentence[rr])==LEFT_PARENTHESIS ? 1 : -1);
-            }
-            no_paranthesis.push_back(compute_sentence(sentence,ll+1,rr-1));
-            ll=rr+1;
-        }
-        else{
-            no_paranthesis.push_back(sentence[ll]);
-            ll++;
-        }
-    }
-    int L=0,R=no_paranthesis.size()-1;
-    float lin=1;
-    Compute_op pre=MUT;
-    while(L<=R){
-        // while(L==R||(holds_alternative<Compute_op>(no_paranthesis[L+1])&&(get<Compute_op>(no_paranthesis[L+1])==ADD||get<Compute_op>(no_paranthesis[L+1])==SUB))){
-        //     ans+=lin;
-        //     if(L!=R){
-        //         if(get<Compute_op>(no_paranthesis[L+1])==SUB) lin=-1;
-        //         else if(get<Compute_op>(no_paranthesis[L+1])==ADD) lin=1;
-        //         pre=MUT;
-        //     }
-        // }
-        if(holds_alternative<Compute_op>(no_paranthesis[L])&&(get<Compute_op>(no_paranthesis[L])==ADD||get<Compute_op>(no_paranthesis[L])==SUB)){
-            ans+=lin;
-        }
-    }
-}
+// float compute_sentence(const Com_contents & sentence,int l,int r){
+//     if(l==r) return get<float> sentence[l];
+//     float ans=0;
+//     bool all=1;
+//     int rr=r;
+//     int ll=l;
+//     Com_contents no_paranthesis;
+//     while(ll<=r){
+//         if(holds_alternative<Compute_op>(sentence[ll])){
+//             int cnt=1;rr=ll;
+//             while(cnt){
+//                 rr++;
+//                 cnt+=(get<Compute_op>(sentence[rr])==LEFT_PARENTHESIS ? 1 : -1);
+//             }
+//             no_paranthesis.push_back(compute_sentence(sentence,ll+1,rr-1));
+//             ll=rr+1;
+//         }
+//         else{
+//             no_paranthesis.push_back(sentence[ll]);
+//             ll++;
+//         }
+//     }
+//     int L=0,R=no_paranthesis.size()-1;
+//     float lin=1;
+//     Compute_op pre=MUT;
+//     while(L<=R){
+//         // while(L==R||(holds_alternative<Compute_op>(no_paranthesis[L+1])&&(get<Compute_op>(no_paranthesis[L+1])==ADD||get<Compute_op>(no_paranthesis[L+1])==SUB))){
+//         //     ans+=lin;
+//         //     if(L!=R){
+//         //         if(get<Compute_op>(no_paranthesis[L+1])==SUB) lin=-1;
+//         //         else if(get<Compute_op>(no_paranthesis[L+1])==ADD) lin=1;
+//         //         pre=MUT;
+//         //     }
+//         // }
+//         if(holds_alternative<Compute_op>(no_paranthesis[L])&&(get<Compute_op>(no_paranthesis[L])==ADD||get<Compute_op>(no_paranthesis[L])==SUB)){
+//             ans+=lin;
+//         }
+//     }
+// }

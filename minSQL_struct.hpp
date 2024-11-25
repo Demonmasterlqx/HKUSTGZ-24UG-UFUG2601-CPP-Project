@@ -79,6 +79,7 @@ enum Compute_op:int{
     SUB,
     DIV,
     MUT,
+    GET_NEGATIVE,
     LEFT_PARENTHESIS,
     RIGHT_PARENTHESIS,
     ERROR_COMPUTE_OP
@@ -154,11 +155,11 @@ class Database{
     vector<Table> data;
 };
 
-struct Visitor {
-    void operator()(int i) { std::cout << "It's an int: " << i << std::endl; }
-    void operator()(float f) { std::cout << "It's a float: " << f << std::endl; }
-    void operator()(const std::string& s) { std::cout << "It's a string: " << s << std::endl; }
-};
+// struct Visitor {
+//     void operator()(int i) { std::cout << "It's an int: " << i << std::endl; }
+//     void operator()(float f) { std::cout << "It's a float: " << f << std::endl; }
+//     void operator()(const std::string& s) { std::cout << "It's a string: " << s << std::endl; }
+// };
 
 Command_line get_command(ifstream & IN);
 
@@ -173,8 +174,8 @@ ostream & operator<<(ostream& a,const Condition_parameter& b);
 ostream & operator<<(ostream& a,const Condition& b);
 ostream & operator<<(ostream& a,const Column_pos& b);
 ostream & operator<<(ostream& a,const Table_content& b);
-ostream & operator<<(ostream& a,const Set_config& b);
-ostream & operator<<(ostream& a,const Set_configs& b);
+// ostream & operator<<(ostream& a,const Set_config& b);
+// ostream & operator<<(ostream& a,const Set_configs& b);
 
 Data_type what_type(const string & a);
 Data_type what_type(const int & a);
@@ -187,17 +188,19 @@ Table_content get_cell(const Table& table,const string & column,const int row);
 bool check_condition(const Table& table,const Condition & con,const int row);
 bool make_comp(Table_content a,Table_content b,Compare_sign op);
 //弃用
-void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type);
-void compute_translate_sentence(Table& table,const int & i,Table_content & target,const Data_type _type,const Com_contents & sentence);
-float compute_sentence(const Com_contents & sentence,int l,int r);
+// void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type);
+// void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type,const Com_contents & sentence);
+// float compute_sentence(const Com_contents & sentence,int l,int r);
 float get_num(const Table& table,const int & i,const Com_content & target);
-float compute(int num1,int num2,Compute_op op);
+// float compute(int num1,int num2,Compute_op op);
 Com_content convert_com_contents(const string & con);
+void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type,Com_contents sentence);
+
 
 bool _create_table(Database & base,const string &name,const vector<string>& cname,const vector<Data_type>& ty);
 bool _insert_into(Table& table,const vector<Parameter_content>& para);
 Table _select_from(const Table& table,const vector<string> &column,const Condition & con);
 bool _delete_from_where(Table& table,const Condition & con);
-bool _updata_set_where(Table& table,const Set_configs & set,const Compute_paras & compara,const Condition & con);
+bool _updata_set_where(Table& table,const Compute_paras & compara,const Condition & con);
 bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2);
 #endif

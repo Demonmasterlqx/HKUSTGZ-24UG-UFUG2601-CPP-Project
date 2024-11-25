@@ -11,9 +11,11 @@ link_directories(${home}/lib)
 include_directories(${home})
 
 set(PART1 ${home}/minSQL_struct.hpp ${home}/minSQL_process.cpp ${home}/minSQL_struct.cpp)
-
+set(CAL ${home}/calculator.cpp)
 # set(LIBRARY_OUTPUT_PATH ${home}/lib)
 add_library(core SHARED ${PART1})
+add_library(calculator SHARED ${CAL})
 # message(${PART1})
 add_executable(a ${home}/main.cpp)
 target_link_libraries(a core)
+target_link_libraries(a calculator)

@@ -188,19 +188,17 @@ Command_line get_command(ifstream & IN){
             input>>para_string1;//=
             if(para_string1!="=") return Command_line(ERROR_COMMAND,Parameter());
             Com_contents com_contents;
-            bool pre_is_op=1;
             while(1){
                 input>>para_string;
                 if(para_string=="WHERE"||para_string==";"||para_string==",") break;
-                Com_content=convert_com_contents(para_string);
-                if(holds_alternative<Compute_op>(Com_content)&&get<Compute_op>(Com_content)==SUB){
-                    if(!pre_is_op) com_contents.push_back(ADD);
-                    com_contents.push_back(LEFT_PARENTHESIS);
-                    com_contents.push_back((float)-1.0);
-                    com_contents.push_back();
-                    com_contents.push_back(RIGHT_PARENTHESIS);
+                Com_content content=convert_com_contents(para_string);
+                bool pre_is_op=1;
+                if(holds_alternative<Compute_op>(content)){
+                    if(get<Compute_op>(content)==SUB&&pre_is_op) content=GET_NEGATIVE;
+                    pre_is_op=1;
                 }
-                com_contents.push_back();
+                else pre_is_op=0;
+                com_contents.push_back(content);
             }
             comparas.push_back((Compute_para){para_string3,com_contents});
             //read in one compute sentence
@@ -322,18 +320,18 @@ ostream & operator<<(ostream& a,const Table_content& b){
     return a;
 }
 
-ostream & operator<<(ostream& a,const Set_config& b){
-    a<<b.column<<"="<<b.content;
-    return a;
-}
+// ostream & operator<<(ostream& a,const Set_config& b){
+//     a<<b.column<<"="<<b.content;
+//     return a;
+// }
 
-ostream & operator<<(ostream& a,const Set_configs& b){
-    a<<"THERE ARE "<<b.size()<<" SETS\n";
-    for(auto i : b){
-        cout<<i<<endl;
-    }
-    return a;
-}
+// ostream & operator<<(ostream& a,const Set_configs& b){
+//     a<<"THERE ARE "<<b.size()<<" SETS\n";
+//     for(auto i : b){
+//         cout<<i<<endl;
+//     }
+//     return a;
+// }
 
 Column_pos::Column_pos(const string& v1){
     int pos=v1.find('.');
@@ -341,10 +339,10 @@ Column_pos::Column_pos(const string& v1){
     else table_name=v1.substr(0,pos),column_name=v1.substr(pos+1);;
 }
 
-Set_config::Set_config(const string & v1,const string & v2){
-    column=v1;
-    content=v2;
-}
+// Set_config::Set_config(const string & v1,const string & v2){
+//     column=v1;
+//     content=v2;
+// }
 
 void get_quotation_content(string & a,stringstream & input){
     if(a[0]!='\'') return;
@@ -401,7 +399,7 @@ Data_type what_type(const int & a){
     if(a==FLOAT) return FLOAT;
     if(a==CONDITION) return CONDITION;
     if(a==COLUMN_POS) return COLUMN_POS;
-    if(a==SET_CONFIGS) return SET_CONFIGS;
+    // if(a==SET_CONFIGS) return SET_CONFIGS;
     return ERROR_TYPE;
 }
 
