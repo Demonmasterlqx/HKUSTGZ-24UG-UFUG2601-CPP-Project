@@ -123,22 +123,6 @@ float get_num(const Table& table,const int & i,const Com_content & target){
     return 0;
 }
 
-// float compute(int num1,int num2,Compute_op op){
-//     if(op==MUT) return num1*num2;
-//     if(op==SUB) return num1-num2;
-//     if(op==DIV) return num1/num2;
-//     if(op==ADD) return num1+num2;
-//     return 0;
-// }
-
-// void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type){
-//     float num1=get_num(table,i,com.para[1]);
-//     float num2=get_num(table,i,com.para[2]);
-//     float ans=compute(num1,num2,com.op);
-//     if(_type==INTEGER) target=int(ans);
-//     else if(_type==FLOAT) target=ans;
-// }
-
 bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
     Table ans;
     ans.Table_name=table2.Table_name;
@@ -177,43 +161,3 @@ void compute_translate_sentence(Table& table,const int & R,Table_content & targe
     if(_type==INTEGER) target=(int)calculate_sentence(sentence);
     if(_type==FLOAT) target=(float)calculate_sentence(sentence);
 }
-
-// float compute_sentence(const Com_contents & sentence,int l,int r){
-//     if(l==r) return get<float> sentence[l];
-//     float ans=0;
-//     bool all=1;
-//     int rr=r;
-//     int ll=l;
-//     Com_contents no_paranthesis;
-//     while(ll<=r){
-//         if(holds_alternative<Compute_op>(sentence[ll])){
-//             int cnt=1;rr=ll;
-//             while(cnt){
-//                 rr++;
-//                 cnt+=(get<Compute_op>(sentence[rr])==LEFT_PARENTHESIS ? 1 : -1);
-//             }
-//             no_paranthesis.push_back(compute_sentence(sentence,ll+1,rr-1));
-//             ll=rr+1;
-//         }
-//         else{
-//             no_paranthesis.push_back(sentence[ll]);
-//             ll++;
-//         }
-//     }
-//     int L=0,R=no_paranthesis.size()-1;
-//     float lin=1;
-//     Compute_op pre=MUT;
-//     while(L<=R){
-//         // while(L==R||(holds_alternative<Compute_op>(no_paranthesis[L+1])&&(get<Compute_op>(no_paranthesis[L+1])==ADD||get<Compute_op>(no_paranthesis[L+1])==SUB))){
-//         //     ans+=lin;
-//         //     if(L!=R){
-//         //         if(get<Compute_op>(no_paranthesis[L+1])==SUB) lin=-1;
-//         //         else if(get<Compute_op>(no_paranthesis[L+1])==ADD) lin=1;
-//         //         pre=MUT;
-//         //     }
-//         // }
-//         if(holds_alternative<Compute_op>(no_paranthesis[L])&&(get<Compute_op>(no_paranthesis[L])==ADD||get<Compute_op>(no_paranthesis[L])==SUB)){
-//             ans+=lin;
-//         }
-//     }
-// }

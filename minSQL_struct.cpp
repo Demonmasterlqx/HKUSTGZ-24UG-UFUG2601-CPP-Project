@@ -21,11 +21,12 @@ Command_line get_command(ifstream & IN){
         if(lin=='!'){
             if(IN.get()!='=') return Command_line(ERROR_COMMAND,Parameter());
             if(pre_empty==1)input<<" ";
-            input<<"!=";
+            input<<"!= ";
             pre_empty=1;
         }
         // cout<<(int)lin<<endl;
-        if(lin==-30) {IN.get(),IN.get();lin='\'';in_^=1;}
+        if(lin==-30) {IN.get(),IN.get();lin='\'';}
+        if(lin=='\'') in_^=1;
         if(in_||lin=='\''){
             if(pre_empty==1)input<<" ";
             input<<lin;
@@ -192,6 +193,7 @@ Command_line get_command(ifstream & IN){
             while(1){
                 input>>para_string;
                 if(para_string=="WHERE"||para_string==";"||para_string==",") break;
+                get_quotation_content(para_string,input);
                 Com_content content=convert_com_contents(para_string);
                 if(holds_alternative<Compute_op>(content)){
                     if(get<Compute_op>(content)==SUB&&pre_is_op) content=GET_NEGATIVE;
@@ -320,29 +322,11 @@ ostream & operator<<(ostream& a,const Table_content& b){
     return a;
 }
 
-// ostream & operator<<(ostream& a,const Set_config& b){
-//     a<<b.column<<"="<<b.content;
-//     return a;
-// }
-
-// ostream & operator<<(ostream& a,const Set_configs& b){
-//     a<<"THERE ARE "<<b.size()<<" SETS\n";
-//     for(auto i : b){
-//         cout<<i<<endl;
-//     }
-//     return a;
-// }
-
 Column_pos::Column_pos(const string& v1){
     int pos=v1.find('.');
     if(pos==v1.npos) table_name="",column_name=v1;
     else table_name=v1.substr(0,pos),column_name=v1.substr(pos+1);;
 }
-
-// Set_config::Set_config(const string & v1,const string & v2){
-//     column=v1;
-//     content=v2;
-// }
 
 void get_quotation_content(string & a,stringstream & input){
     if(a[0]!='\'') return;
@@ -381,13 +365,6 @@ Com_content get_num_or_string(const string & a){
     else return lin;
 }
 
-// Compute_para::Compute_para(const string &para1,const string &para2,const string &para3,const string &oper){
-//     para[0]=para1;
-//     op=which_compute_op(oper);
-//     para[1]=get_num_or_string(para2);
-//     para[2]=get_num_or_string(para3);
-// }
-
 Compute_para::Compute_para(const string& tar,const Com_contents & in_sentence){
     target=tar;
     sentence=in_sentence;
@@ -399,7 +376,6 @@ Data_type what_type(const int & a){
     if(a==FLOAT) return FLOAT;
     if(a==CONDITION) return CONDITION;
     if(a==COLUMN_POS) return COLUMN_POS;
-    // if(a==SET_CONFIGS) return SET_CONFIGS;
     return ERROR_TYPE;
 }
 

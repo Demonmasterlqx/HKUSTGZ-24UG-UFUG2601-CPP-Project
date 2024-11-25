@@ -15,7 +15,6 @@ class Table;
 class Database;
 struct Visitor;
 struct Column_pos;
-// struct Set_config;
 struct Compute_para;
 
 //用于where中的条件储存
@@ -32,8 +31,6 @@ typedef variant<string,float,Compute_op> Com_content;
 储存一整个等号左边的式子
 */
 typedef vector<Com_content> Com_contents;
-
-// typedef vector<Set_config> Set_configs;
 
 /*
 储存了所有SET之后的表达式
@@ -109,14 +106,6 @@ struct Condition_parameter{
     Table_content content;
 };
 
-// struct Set_config{
-//     Set_config()=default;
-//     Set_config(const string & v1,const string & v2);
-//     // Set_config(const string & v1);
-//     string column;
-//     Table_content content;
-// };
-
 class Command_line{
     public:
     Command_line(Command_type G,Parameter F);
@@ -155,11 +144,6 @@ class Database{
     vector<Table> data;
 };
 
-// struct Visitor {
-//     void operator()(int i) { std::cout << "It's an int: " << i << std::endl; }
-//     void operator()(float f) { std::cout << "It's a float: " << f << std::endl; }
-//     void operator()(const std::string& s) { std::cout << "It's a string: " << s << std::endl; }
-// };
 
 Command_line get_command(ifstream & IN);
 
@@ -174,8 +158,6 @@ ostream & operator<<(ostream& a,const Condition_parameter& b);
 ostream & operator<<(ostream& a,const Condition& b);
 ostream & operator<<(ostream& a,const Column_pos& b);
 ostream & operator<<(ostream& a,const Table_content& b);
-// ostream & operator<<(ostream& a,const Set_config& b);
-// ostream & operator<<(ostream& a,const Set_configs& b);
 
 Data_type what_type(const string & a);
 Data_type what_type(const int & a);
@@ -187,12 +169,7 @@ Compute_op which_compute_op(const string & a);
 Table_content get_cell(const Table& table,const string & column,const int row);
 bool check_condition(const Table& table,const Condition & con,const int row);
 bool make_comp(Table_content a,Table_content b,Compare_sign op);
-//弃用
-// void updata_compute(Table& table,const int & i,Table_content & target,const Compute_para & com,Data_type _type);
-// void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type,const Com_contents & sentence);
-// float compute_sentence(const Com_contents & sentence,int l,int r);
 float get_num(const Table& table,const int & i,const Com_content & target);
-// float compute(int num1,int num2,Compute_op op);
 Com_content convert_com_contents(const string & con);
 void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type,Com_contents sentence);
 
