@@ -188,11 +188,11 @@ Command_line get_command(ifstream & IN){
             input>>para_string1;//=
             if(para_string1!="=") return Command_line(ERROR_COMMAND,Parameter());
             Com_contents com_contents;
+            bool pre_is_op=1;
             while(1){
                 input>>para_string;
                 if(para_string=="WHERE"||para_string==";"||para_string==",") break;
                 Com_content content=convert_com_contents(para_string);
-                bool pre_is_op=1;
                 if(holds_alternative<Compute_op>(content)){
                     if(get<Compute_op>(content)==SUB&&pre_is_op) content=GET_NEGATIVE;
                     pre_is_op=1;

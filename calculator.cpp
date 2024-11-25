@@ -56,6 +56,7 @@ float Nifix_expression::calculate(){
                 }
             }
         }
+        else num.push(get<float>(i));
     }
     return num.top();
 }
