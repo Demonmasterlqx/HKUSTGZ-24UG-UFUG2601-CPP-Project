@@ -102,7 +102,7 @@ void convert_data(const Data_type & Type,Table_content &command){
 
 Command_line get_convert_command(ifstream & IN){
     Command_line command=get_command(IN);
-    while(!in.eof()&&_is_empty((char)in.get())); if(!in.eof()) in.unget();
+    // while(!in.eof()&&_is_empty((char)in.get())); if(!in.eof()) in.unget();
     stringstream LIN;int INT;float FLO;
     if(command.command_type==INSERT_INTO){
         if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
@@ -288,7 +288,8 @@ bool updata_set_where(const Command_line& line){
 
 bool select_from_inner_join_on(const Command_line& line){
     if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
-    return _select_from_inner_join_on(get<Column_pos>(line.parameter[0]),get<Column_pos>(line.parameter[1]),get_table(get<string>(line.parameter[2])),get_table(get<string>(line.parameter[3])),get<Column_pos>(line.parameter[4]),get<Column_pos>(line.parameter[5]));
+    write_in(out,_select_from_inner_join_on(get<Column_pos>(line.parameter[0]),get<Column_pos>(line.parameter[1]),get_table(get<string>(line.parameter[2])),get_table(get<string>(line.parameter[3])),get<Column_pos>(line.parameter[4]),get<Column_pos>(line.parameter[5])));
+    return 1;
 }
 
 void write_in(int Database_index){
@@ -301,7 +302,7 @@ void write_in(int Database_index){
     const Database & now=database[Database_index];
     fs::path now_da=database_path/now.data_base_name;
     ofstream storeout;storeout.open(now_da);
-    cout<<now_da<<endl;
+    // cout<<now_da<<endl;
     storeout<<STORTAGE_TAG<<endl;
     storeout<<now.data_base_name<<endl;
     storeout<<now.data.size()<<endl;

@@ -129,7 +129,7 @@ float get_num(const Table& table,const int & i,const Com_content & target){
     return 0;
 }
 
-bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
+Table& _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
     Table ans;
     ans.Table_name=table2.Table_name;
     ans.column_name.push_back(pos1.column_name);
@@ -150,7 +150,7 @@ bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,co
         }
     }
     table2=ans;
-    return 1;
+    return table2;
 }
 
 void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type, Com_contents sentence){

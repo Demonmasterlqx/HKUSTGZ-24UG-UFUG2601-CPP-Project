@@ -184,5 +184,5 @@ bool _insert_into(Table& table,const vector<Parameter_content>& para);
 Table _select_from(const Table& table,const vector<string> &column,const Condition & con);
 bool _delete_from_where(Table& table,const Condition & con);
 bool _updata_set_where(Table& table,const Compute_paras & compara,const Condition & con);
-bool _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2);
+Table& _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2);
 #endif

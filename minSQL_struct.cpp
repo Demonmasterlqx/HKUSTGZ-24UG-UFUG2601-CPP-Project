@@ -16,6 +16,8 @@ Command_line get_command(ifstream & IN){
     // Set_configs sets;
     Compute_paras comparas;
     bool in_=0;
+    while(!IN.eof()&&_is_empty((char)IN.get()));
+    if(!IN.eof()) IN.unget();
     while(1){
         lin=IN.get();
         if(lin=='!'){
@@ -207,7 +209,7 @@ Command_line get_command(ifstream & IN){
         para.push_back(condition);
         // cout<<"DSADASDA\n";
     }
-    else if(ans.find("DELETE FROM")!=ans.npos){
+    else if(ans.find("DELETE")!=ans.npos){
         type=DELETE_FROM_WHERE;
         input>>para_string>>para_string;//DELETE FROM
         input>>para_string;
@@ -223,6 +225,10 @@ Command_line get_command(ifstream & IN){
     }
     else {return Command_line(ERROR_COMMAND,Parameter());}
     if(input.fail()) return Command_line(ERROR_COMMAND,Parameter());
+
+    while(!IN.eof()&&_is_empty((char)IN.get()));
+    if(!IN.eof()) IN.unget();
+
     return Command_line(type,para);
 }
 
@@ -240,11 +246,11 @@ Parameter Command_line::get_parameter(){
 }
 
 bool is_special(const char & a){
-    return a==' '||a=='\n'||a==')'||a=='('||a==','||a=='\''||a==';'||a=='<'||a=='='||a=='>'||a=='*'||a=='/'||a=='+'||a=='-';
+    return a==' '||a=='\n'||a=='\r'||a==')'||a=='('||a==','||a=='\''||a==';'||a=='<'||a=='='||a=='>'||a=='*'||a=='/'||a=='+'||a=='-';
 }
 
 bool _is_empty(const char & a){
-    return a==' '||a=='\n';
+    return a==' '||a=='\n'||a=='\r';
 }
 
 bool is_special(const string & a){
