@@ -15,7 +15,6 @@ int get_compute_op_level(const Compute_op& op);
 
 float calculate_sentence(const Com_contents & sentence);
 
-//后缀表达式
 class Nifix_expression{
     public:
     Nifix_expression()=default;
