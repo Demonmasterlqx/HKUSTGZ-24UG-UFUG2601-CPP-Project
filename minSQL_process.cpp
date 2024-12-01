@@ -54,8 +54,9 @@ Table _select_from(const Table& table,const vector<string> &column,const Conditi
 }
 
 Table_content get_cell(const Table& table,const string & column,const int row){
-    int len=table.column_name.size(),pos;
+    int len=table.column_name.size(),pos=-1;
     for(int i=0;i<len;i++) if(table.column_name[i]==column) {pos=i;break;}
+    if(pos==-1) return error_code;
     return holds_alternative<int>(table.row[row][pos]) ? (float)get<int>(table.row[row][pos]) : table.row[row][pos];
 }
 
@@ -76,6 +77,8 @@ bool check_condition(const Table& table,const Condition & con,const int row){
 }
 
 bool make_comp(Table_content a,Table_content b,Compare_sign op){
+    if(holds_alternative<string>(a)&&a==error_code) return 1;
+    if(holds_alternative<string>(b)&&b==error_code) return 1;
     if(op==EQUAL) return a==b;
     if(op==BIGER) return a>b;
     if(op==SMALLER) return a<b;
@@ -129,7 +132,7 @@ float get_num(const Table& table,const int & i,const Com_content & target){
     return 0;
 }
 
-Table& _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
+Table _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
     Table ans;
     ans.Table_name=table2.Table_name;
     ans.column_name.push_back(pos1.column_name);
@@ -149,7 +152,6 @@ Table& _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,
             ans.row.push_back(LL);
         }
     }
-    table2=ans;
     return table2;
 }
 
