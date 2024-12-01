@@ -15,6 +15,7 @@ Command_line get_command(ifstream & IN){
     Condition condition;
     Inner_join_on_configs innerjoin;
     Compute_paras comparas;
+    Select_part select_part;
     bool in_=0;
     while(!IN.eof()&&_is_empty((char)IN.get()));
     if(!IN.eof()) IN.unget();
@@ -45,6 +46,7 @@ Command_line get_command(ifstream & IN){
             }
             else input<<lin,pre_empty=0;
         }
+        if(!in_&&lin=='\'') pre_empty=0;
         if(lin==';') break;
     }
     ans=input.str();
@@ -121,30 +123,23 @@ Command_line get_command(ifstream & IN){
 
         input>>para_string;
         if(para_string=="*"){
-            para.push_back(para_string);
+            select_part.push_back(para_string);
             input>>para_string;
             if(para_string!="FROM") return Command_line(ERROR_COMMAND,Parameter());
         }
         else{
-            para.push_back(para_string);
+            select_part.push_back(para_string);
             while(1){
                 input>>para_string;
                 if(para_string=="FROM") break;
                 else if(para_string==",") continue;
                 if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
-                para.push_back(para_string);
+                select_part.push_back(para_string);
             }
         }
-
+        para.push_back(select_part);
         //get column
-        input>>para_string>>para_string1>>para_string1;
-        //para_string1=","
-        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
-        if(is_special(para_string1)) return Command_line(ERROR_COMMAND,Parameter());
-        para.push_back(Column_pos(para_string));
-        para.push_back(Column_pos(para_string1));
-        //two targes
-        input>>para_string; //FROM
+        // input>>para_string; //FROM
         input>>para_string;
         if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);

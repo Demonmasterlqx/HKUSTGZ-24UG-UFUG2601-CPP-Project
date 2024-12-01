@@ -56,7 +56,7 @@ Table _select_from(const Table& table,const vector<string> &column,const Conditi
 Table_content get_cell(const Table& table,const string & column,const int row){
     int len=table.column_name.size(),pos=-1;
     for(int i=0;i<len;i++) if(table.column_name[i]==column) {pos=i;break;}
-    if(pos==-1) return error_code;
+    if(pos==-1) return eerror_code;
     return holds_alternative<int>(table.row[row][pos]) ? (float)get<int>(table.row[row][pos]) : table.row[row][pos];
 }
 
@@ -77,8 +77,8 @@ bool check_condition(const Table& table,const Condition & con,const int row){
 }
 
 bool make_comp(Table_content a,Table_content b,Compare_sign op){
-    if(holds_alternative<string>(a)&&a==error_code) return 1;
-    if(holds_alternative<string>(b)&&b==error_code) return 1;
+    if(holds_alternative<string>(a)&&get<string>(a)==eerror_code) return 1;
+    if(holds_alternative<string>(b)&&get<string>(b)==eerror_code) return 1;
     if(op==EQUAL) return a==b;
     if(op==BIGER) return a>b;
     if(op==SMALLER) return a<b;
@@ -132,28 +132,28 @@ float get_num(const Table& table,const int & i,const Com_content & target){
     return 0;
 }
 
-Table _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
-    Table ans;
-    ans.Table_name=table2.Table_name;
-    ans.column_name.push_back(pos1.column_name);
-    ans.column_name.push_back(pos2.column_name);
-    ans.data_type.push_back(which_column_type(table1,pos1.column_name));
-    ans.data_type.push_back(which_column_type(table2,pos2.column_name));
+// Table _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2){
+//     Table ans;
+//     ans.Table_name=table2.Table_name;
+//     ans.column_name.push_back(pos1.column_name);
+//     ans.column_name.push_back(pos2.column_name);
+//     ans.data_type.push_back(which_column_type(table1,pos1.column_name));
+//     ans.data_type.push_back(which_column_type(table2,pos2.column_name));
 
-    int cpos1=which_column(table1,con1.column_name),cpos2=which_column(table2,con2.column_name);
-    int lr1=table1.row.size(),lr2=table2.row.size();
-    int tag1=which_column(table1,pos1.column_name),tag2=which_column(table2,pos2.column_name);
-    for(int i=0;i<lr1;i++){
-        for(int e=0;e<lr2;e++){
-            if(table1.row[i][cpos1]!=table2.row[e][cpos2]) continue;
-            vector<Table_content> LL;
-            LL.push_back(table1.row[i][tag1]);
-            LL.push_back(table2.row[e][tag2]);
-            ans.row.push_back(LL);
-        }
-    }
-    return table2;
-}
+//     int cpos1=which_column(table1,con1.column_name),cpos2=which_column(table2,con2.column_name);
+//     int lr1=table1.row.size(),lr2=table2.row.size();
+//     int tag1=which_column(table1,pos1.column_name),tag2=which_column(table2,pos2.column_name);
+//     for(int i=0;i<lr1;i++){
+//         for(int e=0;e<lr2;e++){
+//             if(table1.row[i][cpos1]!=table2.row[e][cpos2]) continue;
+//             vector<Table_content> LL;
+//             LL.push_back(table1.row[i][tag1]);
+//             LL.push_back(table2.row[e][tag2]);
+//             ans.row.push_back(LL);
+//         }
+//     }
+//     return table2;
+// }
 
 void compute_translate_sentence(Table& table,const int & R,Table_content & target,const Data_type _type, Com_contents sentence){
     if(_type==TEXT){

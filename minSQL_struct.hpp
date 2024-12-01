@@ -39,12 +39,13 @@ typedef vector<Com_content> Com_contents;
 储存了所有SET之后的表达式
 */
 typedef vector<Compute_para> Compute_paras;
+typedef std::vector<std::string> Select_part;
+typedef  vector<Inner_join_on_config> Inner_join_on_configs;
 typedef variant<string,int,float> Table_content;
-typedef variant<string,int,float,Condition,Column_pos,Compute_paras,Inner_join_on_configs> Parameter_content;
+typedef variant<string,int,float,Condition,Column_pos,Compute_paras,Inner_join_on_configs,Select_part> Parameter_content;
 typedef vector<vector<Table_content>> Table_row;
 typedef vector<Parameter_content> Parameter;
 typedef pair<bool,bool> pbb;
-typedef  vector<Inner_join_on_config> Inner_join_on_configs;
 
 enum Data_type:int{
     TEXT,
@@ -107,7 +108,9 @@ struct Inner_join_on_config{
     string nextable;
     string colums[2];
     Inner_join_on_config(){}
-    Inner_join_on_config(const string & table,const string & s1,const string & s2):nextable(table),colums[0](s1),colums[1](s1){};
+    Inner_join_on_config(const string & table,const string & s1,const string & s2):nextable(table){
+        colums[0]=(s1),colums[1]=(s2);
+    };
 };
 
 //用于where中的条件储存
@@ -193,8 +196,8 @@ bool _insert_into(Table& table,const vector<Parameter_content>& para);
 Table _select_from(const Table& table,const vector<string> &column,const Condition & con);
 bool _delete_from_where(Table& table,const Condition & con);
 bool _updata_set_where(Table& table,const Compute_paras & compara,const Condition & con);
-Table& _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2);
+// Table& _select_from_inner_join_on(const Column_pos& pos1,const Column_pos& pos2,const Table& table1,Table& table2,const Column_pos&con1,const Column_pos&con2);
 
-const string error_code="---___--*-=?.,.,.,.";
+const string eerror_code="---___--*-=?.,.,.,.";
 
 #endif
