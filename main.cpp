@@ -40,6 +40,9 @@ bool is_num(const string & s);
 Condition convert_where_part(const Condition& condition);
 Data_type get_type(const Condition_parameter& con);
 
+void inner_join(Table &table_tar,const Table & table_nex,const string column[2]);
+Table convert_table_for_inner_join(const Table & tableo);
+
 int main (int num,char *file_name[]){
     cout<<database_path<<endl;
     // set input and output
@@ -104,24 +107,24 @@ Command_line get_convert_command(ifstream & IN){
     Command_line command=get_command(IN);
     // while(!in.eof()&&_is_empty((char)in.get())); if(!in.eof()) in.unget();
     stringstream LIN;int INT;float FLO;
+    if(Database_index==-1&&command.command_type!=CREATE_DATABASE&&command.command_type!=USE_DATABASE) {return Command_line(ERROR_COMMAND,Parameter());}
     if(command.command_type==INSERT_INTO){
-        if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
         Table& table=get_table(get<string>(command.parameter[0]));
         for(int i=command.parameter.size()-1,j=table.data_type.size()-1;i;j--,i--){
             convert_data(table.data_type[j],command.parameter[i]);
         }
     }
     else if(command.command_type==SELECT_FROM){
-        if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
         command.parameter[command.parameter.size()-1]=convert_where_part(get<Condition>(command.parameter[command.parameter.size()-1]));
     }
     else if(command.command_type==UPDATE_SET_WHERE){
-        if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
         Table& table=get_table(get<string>(command.parameter[0]));
         command.parameter[command.parameter.size()-1]=convert_where_part(get<Condition>(command.parameter[command.parameter.size()-1]));
     }
     else if(command.command_type==DELETE_FROM_WHERE){
-        if(Database_index==-1) {return Command_line(ERROR_COMMAND,Parameter());}
+        command.parameter[command.parameter.size()-1]=convert_where_part(get<Condition>(command.parameter[command.parameter.size()-1]));
+    }
+    else if(command.command_type==SELECT_FROM_INNER_JOIN_ON){
         command.parameter[command.parameter.size()-1]=convert_where_part(get<Condition>(command.parameter[command.parameter.size()-1]));
     }
     return command;
@@ -288,8 +291,51 @@ bool updata_set_where(const Command_line& line){
 
 bool select_from_inner_join_on(const Command_line& line){
     if(Database_index==-1) {cout<<"Have not select database\n";return 0;}
-    write_in(out,_select_from_inner_join_on(get<Column_pos>(line.parameter[0]),get<Column_pos>(line.parameter[1]),get_table(get<string>(line.parameter[2])),get_table(get<string>(line.parameter[3])),get<Column_pos>(line.parameter[4]),get<Column_pos>(line.parameter[5])));
+    const Parameter& para=line.parameter;
+    const Condition& con=get<Condition>(para[para.size()-1]);
+    // //第一层：属于那个表
+    // //第二层：这个表中被选中的row
+    // //第三层指针
+    // vector<vector<vector<Table_content>*>> table_content;
+    Table table=convert_table_for_inner_join(get_table(get<string>(para[1])));
+    // table.Table_name="Select_from_inner_join_on"
+    //加载第一个表
+
+    for(const Inner_join_on_config &i : get<Inner_join_on_configs>(para[2])){
+        Table nextable=convert_table_for_inner_join(get_table(i.nextable));
+        for(string& e : nextable.column_name) table.column_name.push_back(e);
+        for(Data_type& e : nextable.data_type) table.data_type.push_back(e);
+        inner_join(table,nextable,i.colums);
+    }
+
+    write_in(out,_select_from(table,get<Select_part>(para[0]),con));
+
     return 1;
+}
+
+void inner_join(Table &table_tar,const Table & table_nex,const string  column[2]){
+    int pos1=which_column(table_tar,column[0]);
+    int pos2=which_column(table_nex,column[1]);
+
+    Table_row newrow;
+    int cnt=-1;
+
+    for(int i=table_tar.row.size()-1;i>=0;i--){
+        for(int e=table_nex.row.size()-1;e>=0;e--){
+            if(table_tar.row[i][pos1]!=table_nex.row[e][pos2]) continue;
+            newrow.push_back(vector<Table_content>());
+            cnt++;
+            for(auto & j : table_tar.row[i]) newrow[cnt].push_back(j);
+            for(auto & j : table_nex.row[e]) newrow[cnt].push_back(j);
+        }
+    }
+    table_tar.row=newrow;
+}
+
+Table convert_table_for_inner_join(const Table & tableo){
+    Table table=tableo;
+    for(auto &i : table.column_name) i=table.Table_name+"."+i;
+    return table;
 }
 
 void write_in(int Database_index){

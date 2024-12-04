@@ -13,8 +13,9 @@ Command_line get_command(ifstream & IN){
     Command_type type=ERROR_COMMAND;
     Parameter para;
     Condition condition;
-    // Set_configs sets;
+    Inner_join_on_configs innerjoin;
     Compute_paras comparas;
+    Select_part select_part;
     bool in_=0;
     while(!IN.eof()&&_is_empty((char)IN.get()));
     if(!IN.eof()) IN.unget();
@@ -45,6 +46,7 @@ Command_line get_command(ifstream & IN){
             }
             else input<<lin,pre_empty=0;
         }
+        if(!in_&&lin=='\'') pre_empty=0;
         if(lin==';') break;
     }
     ans=input.str();
@@ -118,27 +120,44 @@ Command_line get_command(ifstream & IN){
     else if(ans.find("SELECT")!=ans.npos&&ans.find("INNER JOIN")!=ans.npos){
         type=SELECT_FROM_INNER_JOIN_ON;
         input>>para_string;//SELECT
+
+        input>>para_string;
+        if(para_string=="*"){
+            select_part.push_back(para_string);
+            input>>para_string;
+            if(para_string!="FROM") return Command_line(ERROR_COMMAND,Parameter());
+        }
+        else{
+            select_part.push_back(para_string);
+            while(1){
+                input>>para_string;
+                if(para_string=="FROM") break;
+                else if(para_string==",") continue;
+                if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
+                select_part.push_back(para_string);
+            }
+        }
+        para.push_back(select_part);
         //get column
-        input>>para_string>>para_string1>>para_string1;
-        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
-        if(is_special(para_string1)) return Command_line(ERROR_COMMAND,Parameter());
-        para.push_back(Column_pos(para_string));
-        para.push_back(Column_pos(para_string1));
-        input>>para_string; //FROM
+        // input>>para_string; //FROM
         input>>para_string;
         if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
         para.push_back(para_string);
-        input>>para_string>>para_string; //INNER JOIN
-        input>>para_string;
-        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
-        para.push_back(para_string);
-        input>>para_string; //ON
-        input>>para_string>>para_string1>>para_string2;
-        if(is_special(para_string)) return Command_line(ERROR_COMMAND,Parameter());
-        if(is_special(para_string2)) return Command_line(ERROR_COMMAND,Parameter());
-        para.push_back(Column_pos(para_string));
-        para.push_back(Column_pos(para_string2));
-        input>>para_string;
+        //first one FROM
+        while(1){
+            input>>para_string; //INNER
+            if(para_string=="WHERE"||para_string==";") break;
+            input>>para_string; // JOIN
+            input>>para_string; //table
+            input>>para_string1>>para_string1; //NO column1
+            input>>para_string2>>para_string2; //= column2
+            innerjoin.push_back(Inner_join_on_config(para_string,para_string1,para_string2));
+        }
+        para.push_back(innerjoin);
+        if(para_string=="WHERE"){
+            if(!get_where(input,condition,para_string,para_string1,para_string2)) return Command_line(ERROR_COMMAND,Parameter());
+        }
+        para.push_back(condition);
         if(para_string!=";") return Command_line(ERROR_COMMAND,Parameter());
     }
     else if(ans.find("SELECT")!=ans.npos&&ans.find("INNER JOIN")==ans.npos){
