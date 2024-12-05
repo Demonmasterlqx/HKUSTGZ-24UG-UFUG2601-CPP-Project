@@ -275,7 +275,7 @@ bool _is_empty(const char & a){
 bool is_special(const string & a){
     if(a.length()>=2) return 0;
     if(a.length()==0) return 1;
-    return !(a[0]=='_'||('a'<=a[0]&&a[0]<'z')||('A'<=a[0]&&a[0]<'Z')||('0'<=a[0]&&a[0]<'9'));
+    return !(a[0]=='_'||('a'<=a[0]&&a[0]<='z')||('A'<=a[0]&&a[0]<='Z')||('0'<=a[0]&&a[0]<='9'));
 }
 
 Compare_sign get_compare_sign(const string& op){

@@ -347,6 +347,7 @@ void write_in(int Database_index){
     if(Database_index==-1) return;
     const Database & now=database[Database_index];
     fs::path now_da=database_path/now.data_base_name;
+    if(fs::exists(now_da)) fs::remove(now_da);
     ofstream storeout;storeout.open(now_da);
     // cout<<now_da<<endl;
     storeout<<STORTAGE_TAG<<endl;
