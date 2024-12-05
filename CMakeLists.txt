@@ -2,7 +2,7 @@ project(CPP_project_mindb CXX)
 cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_BUILD_TYPE Debug)
-set(home /home/lqx/code/C++_project_mindb)
+set(home /home/lqx/code/HKUSTGZ-24UG-UFUG2601-CPP-Project)
 # set(EXECUTABLE_OUTPUT_PATH ${home}/build)
 set(LIBRARY_OUTPUT_PATH ${home}/lib)
 set(CMAKE_CXX_STANDARD 20)
