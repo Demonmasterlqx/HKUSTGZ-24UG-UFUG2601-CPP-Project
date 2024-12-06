@@ -277,6 +277,7 @@ void write_in(ostream & out,const Table& c){
         }
         out<<endl;
     }
+    out<<"---\n";
 }
 
 bool delete_from_where(const Command_line& line){
